@@ -1,0 +1,19 @@
+# Arquivos gerais
+*.log
+.DS_Store
+
+# Backend
+backend/node_modules/
+backend/.env
+backend/npm-debug.log
+
+# Frontend
+frontend/node_modules/
+frontend/build/
+frontend/.env.local
+frontend/npm-debug.log
+
+# Outros
+.env
+dist/
+coverage/
