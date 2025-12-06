@@ -25,6 +25,7 @@ Tutor Connect é uma aplicação web projetada para facilitar a tutoria entre es
 ## Funcionalidades
 
 ### Para Alunos
+
 - Buscar tutores por disciplina e disponibilidade
 - Visualizar perfis, avaliações e comentários dos tutores
 - Agendar sessões de tutoria
@@ -32,6 +33,7 @@ Tutor Connect é uma aplicação web projetada para facilitar a tutoria entre es
 - Avaliar e comentar sessões concluídas
 
 ### Para Tutores
+
 - Cadastrar disciplinas que pode ensinar com níveis de proficiência
 - Definir disponibilidade por data e horário
 - Confirmar ou recusar solicitações de sessão
@@ -39,6 +41,7 @@ Tutor Connect é uma aplicação web projetada para facilitar a tutoria entre es
 - Gerenciar agenda de tutorias
 
 ### Funcionalidades da Plataforma
+
 - Autenticação via Google OAuth
 - Criação automática de eventos no Google Calendar
 - Geração de link do Google Meet para cada sessão
@@ -83,6 +86,7 @@ tutor-connect/
 ### Stack Tecnológica
 
 **Backend**
+
 - Node.js
 - Express.js
 - MongoDB com Mongoose
@@ -90,6 +94,7 @@ tutor-connect/
 - Google APIs (OAuth2, Calendar)
 
 **Frontend**
+
 - React 18
 - React Router v7
 - Tailwind CSS
@@ -185,40 +190,41 @@ PORT=5001
 
 ### Autenticação
 
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | `/auth/google` | Inicia fluxo de OAuth do Google |
-| GET | `/auth/google/callback` | Callback do OAuth |
-| GET | `/auth/verify` | Valida token JWT |
+| Método | Endpoint                | Descrição                       |
+| ------ | ----------------------- | ------------------------------- |
+| GET    | `/auth/google`          | Inicia fluxo de OAuth do Google |
+| GET    | `/auth/google/callback` | Callback do OAuth               |
+| GET    | `/auth/verify`          | Valida token JWT                |
 
 ### Usuários
 
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | `/users/profile` | Obtém perfil do usuário atual |
-| PUT | `/users/profile` | Atualiza perfil do usuário |
-| GET | `/users/tutores` | Lista tutores disponíveis |
-| GET | `/users/tutor/:id` | Obtém detalhes do tutor |
-| GET | `/users/tutor/:id/disponibilidade` | Obtém disponibilidade do tutor |
-| POST | `/users/disponibilidade` | Adiciona horário de disponibilidade |
-| DELETE | `/users/disponibilidade/:id` | Remove horário de disponibilidade |
+| Método | Endpoint                           | Descrição                           |
+| ------ | ---------------------------------- | ----------------------------------- |
+| GET    | `/users/profile`                   | Obtém perfil do usuário atual       |
+| PUT    | `/users/profile`                   | Atualiza perfil do usuário          |
+| GET    | `/users/tutores`                   | Lista tutores disponíveis           |
+| GET    | `/users/tutor/:id`                 | Obtém detalhes do tutor             |
+| GET    | `/users/tutor/:id/disponibilidade` | Obtém disponibilidade do tutor      |
+| POST   | `/users/disponibilidade`           | Adiciona horário de disponibilidade |
+| DELETE | `/users/disponibilidade/:id`       | Remove horário de disponibilidade   |
 
 ### Sessões
 
-| Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| POST | `/sessoes/create` | Cria nova sessão |
-| GET | `/sessoes/minhas-sessoes` | Lista sessões do usuário |
-| GET | `/sessoes/:id` | Obtém detalhes da sessão |
-| PUT | `/sessoes/:id/confirmar` | Confirma sessão (tutor) |
-| PUT | `/sessoes/:id/concluir` | Marca sessão como concluída |
-| PUT | `/sessoes/:id/cancelar` | Cancela sessão |
-| POST | `/sessoes/avaliar` | Envia avaliação da sessão |
-| GET | `/sessoes/avaliacoes/tutor/:tutorId` | Lista avaliações e comentários de um tutor |
+| Método | Endpoint                             | Descrição                                  |
+| ------ | ------------------------------------ | ------------------------------------------ |
+| POST   | `/sessoes/create`                    | Cria nova sessão                           |
+| GET    | `/sessoes/minhas-sessoes`            | Lista sessões do usuário                   |
+| GET    | `/sessoes/:id`                       | Obtém detalhes da sessão                   |
+| PUT    | `/sessoes/:id/confirmar`             | Confirma sessão (tutor)                    |
+| PUT    | `/sessoes/:id/concluir`              | Marca sessão como concluída                |
+| PUT    | `/sessoes/:id/cancelar`              | Cancela sessão                             |
+| POST   | `/sessoes/avaliar`                   | Envia avaliação da sessão                  |
+| GET    | `/sessoes/avaliacoes/tutor/:tutorId` | Lista avaliações e comentários de um tutor |
 
 ### Exemplos de Requisição
 
 **Criar Sessão**
+
 ```json
 POST /sessoes/create
 Authorization: Bearer <token>
@@ -233,6 +239,7 @@ Authorization: Bearer <token>
 ```
 
 **Atualizar Perfil**
+
 ```json
 PUT /users/profile
 Authorization: Bearer <token>
@@ -313,4 +320,3 @@ Este projeto está licenciado sob a Licença MIT. Veja o arquivo [LICENSE](LICEN
 
 - **Prof. Junio Moreira** - Orientador da pesquisa acadêmica que originou este projeto
 - **Meus pais** - Pelo apoio incondicional durante toda a graduação
-

@@ -110,13 +110,13 @@ Nunca trabalhe diretamente na branch `main`. Sempre crie uma branch específica 
 
 #### Padrão de Nomenclatura
 
-| Tipo | Formato | Exemplo |
-|------|---------|---------|
+| Tipo                | Formato                       | Exemplo                          |
+| ------------------- | ----------------------------- | -------------------------------- |
 | Nova funcionalidade | `feat/numero-issue/descricao` | `feat/42/filtro-por-localizacao` |
-| Correção de bug | `fix/numero-issue/descricao` | `fix/15/erro-login-google` |
-| Documentação | `docs/descricao` | `docs/atualizar-readme` |
-| Refatoração | `refactor/descricao` | `refactor/componente-sessao` |
-| Testes | `test/descricao` | `test/servico-usuario` |
+| Correção de bug     | `fix/numero-issue/descricao`  | `fix/15/erro-login-google`       |
+| Documentação        | `docs/descricao`              | `docs/atualizar-readme`          |
+| Refatoração         | `refactor/descricao`          | `refactor/componente-sessao`     |
+| Testes              | `test/descricao`              | `test/servico-usuario`           |
 
 ```bash
 # Crie e mude para a nova branch
@@ -146,15 +146,15 @@ Corpo do commit (opcional)
 
 #### Tipos de Commit
 
-| Tipo | Descrição |
-|------|-----------|
-| `feat` | Nova funcionalidade |
-| `fix` | Correção de bug |
-| `docs` | Alteração em documentação |
-| `style` | Formatação (não altera lógica) |
-| `refactor` | Refatoração de código |
-| `test` | Adição ou correção de testes |
-| `chore` | Tarefas de manutenção |
+| Tipo       | Descrição                      |
+| ---------- | ------------------------------ |
+| `feat`     | Nova funcionalidade            |
+| `fix`      | Correção de bug                |
+| `docs`     | Alteração em documentação      |
+| `style`    | Formatação (não altera lógica) |
+| `refactor` | Refatoração de código          |
+| `test`     | Adição ou correção de testes   |
+| `chore`    | Tarefas de manutenção          |
 
 #### Exemplos
 
@@ -268,21 +268,26 @@ Ao criar uma issue, inclua:
 
 ```markdown
 ## Descrição do Bug
+
 Descreva o problema de forma clara.
 
 ## Passos para Reproduzir
+
 1. Vá para '...'
 2. Clique em '...'
 3. Role até '...'
 4. Veja o erro
 
 ## Comportamento Esperado
+
 O que deveria acontecer.
 
 ## Screenshots
+
 Se aplicável.
 
 ## Ambiente
+
 - OS: [ex: Windows 11, macOS 14, Ubuntu 22.04]
 - Navegador: [ex: Chrome 120, Firefox 121]
 - Node.js: [ex: 18.19.0]

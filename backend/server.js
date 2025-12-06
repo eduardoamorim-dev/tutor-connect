@@ -1,46 +1,49 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+require("dotenv").config();
 
-const authRoutes = require('./routes/auth');
-const sessaoRoutes = require('./routes/sessoes');
-const userRoutes = require('./routes/users');
+const authRoutes = require("./routes/auth");
+const sessaoRoutes = require("./routes/sessoes");
+const userRoutes = require("./routes/users");
 
 const app = express();
 
 // Configuração CORS
-app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  }),
+);
 
 app.use(express.json());
 
 // Conectar ao MongoDB
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ MongoDB conectado'))
-  .catch(err => {
-    console.error('❌ Erro ao conectar MongoDB:', err);
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ MongoDB conectado"))
+  .catch((err) => {
+    console.error("❌ Erro ao conectar MongoDB:", err);
     process.exit(1);
   });
 
 // Rotas
-app.use('/auth', authRoutes);
-app.use('/sessoes', sessaoRoutes);
-app.use('/users', userRoutes);
+app.use("/auth", authRoutes);
+app.use("/sessoes", sessaoRoutes);
+app.use("/users", userRoutes);
 
 // Rota de teste
-app.get('/', (req, res) => {
-  res.json({ message: 'API Tutor Connect funcionando!' });
+app.get("/", (req, res) => {
+  res.json({ message: "API Tutor Connect funcionando!" });
 });
 
 // Tratamento de erros global
 app.use((err, req, res, next) => {
-  console.error('Erro não tratado:', err.stack);
-  res.status(500).json({ error: 'Algo deu errado!' });
+  console.error("Erro não tratado:", err.stack);
+  res.status(500).json({ error: "Algo deu errado!" });
 });
 
 const PORT = process.env.PORT || 5001;
