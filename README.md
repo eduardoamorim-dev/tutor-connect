@@ -1,29 +1,48 @@
 # Tutor Connect
 
-Plataforma de tutoria colaborativa entre estudantes. Conecte-se com colegas que dominam o que você precisa aprender e compartilhe seu conhecimento.
+Uma plataforma colaborativa de tutoria entre pares que conecta estudantes que precisam de ajuda com aqueles que podem ensinar. Desenvolvida com React e Node.js.
+
+## Sumário
+
+- [Visão Geral](#visão-geral)
+- [Funcionalidades](#funcionalidades)
+- [Arquitetura](#arquitetura)
+- [Pré-requisitos](#pré-requisitos)
+- [Instalação](#instalação)
+- [Configuração](#configuração)
+- [Referência da API](#referência-da-api)
+- [Uso](#uso)
+- [Contribuição](#contribuição)
+- [Licença](#licença)
+
+## Visão Geral
+
+Tutor Connect é uma aplicação web projetada para facilitar a tutoria entre estudantes. A plataforma permite que usuários se registrem como tutores, definam sua disponibilidade e se conectem com alunos que buscam ajuda em disciplinas específicas. As sessões são agendadas com integração automática ao Google Meet para tutorias online.
 
 ## Funcionalidades
 
 ### Para Alunos
-- Buscar tutores por disciplina
+- Buscar tutores por disciplina e disponibilidade
+- Visualizar perfis, avaliações e comentários dos tutores
 - Agendar sessões de tutoria
-- Ver disponibilidade do tutor antes de agendar
-- Avaliar sessões após conclusão
-- Gerenciar suas sessões (cancelar, ver detalhes)
+- Participar de sessões via links integrados do Google Meet
+- Avaliar e comentar sessões concluídas
 
 ### Para Tutores
-- Cadastrar disciplinas que domina
-- Definir horários de disponibilidade
-- Confirmar ou cancelar sessões
-- Marcar sessões como concluídas
-- Ver avaliações recebidas
+- Cadastrar disciplinas que pode ensinar com níveis de proficiência
+- Definir disponibilidade por data e horário
+- Confirmar ou recusar solicitações de sessão
+- Acompanhar histórico de sessões e avaliações
+- Gerenciar agenda de tutorias
 
-### Integração com Google
-- Login com Google OAuth
+### Funcionalidades da Plataforma
+- Autenticação via Google OAuth
 - Criação automática de eventos no Google Calendar
-- Link do Google Meet gerado automaticamente
+- Geração de link do Google Meet para cada sessão
+- Gerenciamento de status das sessões em tempo real
+- Sistema de avaliação e comentários
 
-## Estrutura do Projeto
+## Arquitetura
 
 ```
 tutor-connect/
@@ -37,13 +56,15 @@ tutor-connect/
 │   │   ├── users.js
 │   │   └── sessoes.js
 │   ├── server.js
-│   └── package.json
+│   ├── package.json
+│   └── .env.example
 │
 └── frontend/
     ├── public/
+    │   └── index.html
     ├── src/
     │   ├── components/
-    │   │   ├── ui/          # Componentes shadcn/ui
+    │   │   ├── ui/
     │   │   ├── Login.js
     │   │   ├── Dashboard.js
     │   │   ├── ProfileSetup.js
@@ -52,27 +73,67 @@ tutor-connect/
     │   │   └── utils.js
     │   ├── App.js
     │   └── index.js
-    └── package.json
+    ├── package.json
+    └── tailwind.config.js
 ```
+
+### Stack Tecnológica
+
+**Backend**
+- Node.js
+- Express.js
+- MongoDB com Mongoose
+- JSON Web Tokens (JWT)
+- Google APIs (OAuth2, Calendar)
+
+**Frontend**
+- React 18
+- React Router v7
+- Tailwind CSS
+- Biblioteca de componentes shadcn/ui
+- Axios
+- Lucide Icons
+
+## Pré-requisitos
+
+Antes de começar, certifique-se de ter instalado:
+
+- Node.js (versão 18.0.0 ou superior)
+- npm (versão 9.0.0 ou superior)
+- MongoDB (versão 6.0 ou superior)
+- Git
+
+Você também precisará de:
+
+- Uma conta no Google Cloud Platform com credenciais OAuth 2.0
+- Google Calendar API habilitada
 
 ## Instalação
 
-### Pré-requisitos
-- Node.js 18+
-- MongoDB
-- Conta Google Cloud (para OAuth e Calendar API)
+### Clonar o Repositório
 
-### Backend
+```bash
+git clone https://github.com/seu-usuario/tutor-connect.git
+cd tutor-connect
+```
+
+### Configuração do Backend
 
 ```bash
 cd backend
 npm install
 cp .env.example .env
-# Configure as variáveis de ambiente
+```
+
+Edite o arquivo `.env` com suas configurações (veja [Configuração](#configuração)).
+
+```bash
 npm run dev
 ```
 
-### Frontend
+O servidor iniciará em `http://localhost:5001`.
+
+### Configuração do Frontend
 
 ```bash
 cd frontend
@@ -80,87 +141,163 @@ npm install
 npm start
 ```
 
-## Configuração do Google OAuth
+A aplicação abrirá em `http://localhost:3000`.
 
-1. Acesse o [Google Cloud Console](https://console.cloud.google.com)
-2. Crie um novo projeto ou selecione um existente
-3. Ative as APIs: Google+ API, Google Calendar API
-4. Configure a tela de consentimento OAuth
-5. Crie credenciais OAuth 2.0
-6. Adicione `http://localhost:5001/auth/google/callback` como URI de redirecionamento
-7. Copie Client ID e Client Secret para o `.env`
+## Configuração
 
-## Variáveis de Ambiente
+### Variáveis de Ambiente
+
+Crie um arquivo `.env` no diretório `backend` com as seguintes variáveis:
 
 ```env
-# MongoDB
+# Banco de Dados
 MONGO_URI=mongodb://localhost:27017/tutor-connect
 
-# JWT
-JWT_SECRET=sua_chave_secreta
+# Autenticação
+JWT_SECRET=sua-chave-secreta-jwt
 
 # Google OAuth
-GOOGLE_CLIENT_ID=xxx
-GOOGLE_CLIENT_SECRET=xxx
+GOOGLE_CLIENT_ID=seu-google-client-id
+GOOGLE_CLIENT_SECRET=seu-google-client-secret
 GOOGLE_REDIRECT_URI=http://localhost:5001/auth/google/callback
 
-# Porta
+# Servidor
 PORT=5001
 ```
 
-## Fluxo do Usuário
+### Configuração do Google Cloud Platform
 
-1. **Login**: Usuário faz login com Google
-2. **Onboarding**: Define se quer ser tutor ou apenas aluno
-   - Se tutor: cadastra disciplinas e disponibilidade
-   - Todos: cadastram disciplinas que precisam aprender
-3. **Dashboard**: 
-   - Busca tutores por disciplina
-   - Vê horários disponíveis
-   - Agenda sessões
-4. **Sessões**:
-   - Tutor confirma a sessão
-   - Ambos podem entrar no Meet
-   - Após finalizar, marcar como concluída
-   - Aluno avalia o tutor
+1. Acesse o [Google Cloud Console](https://console.cloud.google.com)
+2. Crie um novo projeto ou selecione um existente
+3. Habilite as seguintes APIs:
+   - Google+ API
+   - Google Calendar API
+4. Navegue até "APIs e Serviços" > "Credenciais"
+5. Crie credenciais de ID do cliente OAuth 2.0
+6. Configure a tela de consentimento OAuth
+7. Adicione URI de redirecionamento autorizado: `http://localhost:5001/auth/google/callback`
+8. Copie o Client ID e Client Secret para seu arquivo `.env`
 
-## API Endpoints
+## Referência da API
 
-### Auth
-- `GET /auth/google` - Inicia login Google
-- `GET /auth/google/callback` - Callback OAuth
-- `GET /auth/verify` - Verifica token JWT
+### Autenticação
 
-### Users
-- `GET /users/profile` - Perfil do usuário logado
-- `PUT /users/profile` - Atualiza perfil
-- `GET /users/tutores` - Lista tutores
-- `GET /users/tutor/:id` - Detalhes do tutor
-- `GET /users/tutor/:id/disponibilidade` - Disponibilidade por data
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/auth/google` | Inicia fluxo de OAuth do Google |
+| GET | `/auth/google/callback` | Callback do OAuth |
+| GET | `/auth/verify` | Valida token JWT |
+
+### Usuários
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/users/profile` | Obtém perfil do usuário atual |
+| PUT | `/users/profile` | Atualiza perfil do usuário |
+| GET | `/users/tutores` | Lista tutores disponíveis |
+| GET | `/users/tutor/:id` | Obtém detalhes do tutor |
+| GET | `/users/tutor/:id/disponibilidade` | Obtém disponibilidade do tutor |
+| POST | `/users/disponibilidade` | Adiciona horário de disponibilidade |
+| DELETE | `/users/disponibilidade/:id` | Remove horário de disponibilidade |
 
 ### Sessões
-- `POST /sessoes/create` - Criar sessão
-- `GET /sessoes/minhas-sessoes` - Listar sessões
-- `GET /sessoes/:id` - Detalhes da sessão
-- `PUT /sessoes/:id/confirmar` - Confirmar (tutor)
-- `PUT /sessoes/:id/concluir` - Marcar como concluída
-- `PUT /sessoes/:id/cancelar` - Cancelar
-- `POST /sessoes/avaliar` - Avaliar sessão
 
-## Tecnologias
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| POST | `/sessoes/create` | Cria nova sessão |
+| GET | `/sessoes/minhas-sessoes` | Lista sessões do usuário |
+| GET | `/sessoes/:id` | Obtém detalhes da sessão |
+| PUT | `/sessoes/:id/confirmar` | Confirma sessão (tutor) |
+| PUT | `/sessoes/:id/concluir` | Marca sessão como concluída |
+| PUT | `/sessoes/:id/cancelar` | Cancela sessão |
+| POST | `/sessoes/avaliar` | Envia avaliação da sessão |
+| GET | `/sessoes/avaliacoes/tutor/:tutorId` | Lista avaliações e comentários de um tutor |
 
-### Backend
-- Node.js + Express
-- MongoDB + Mongoose
-- Google APIs (OAuth, Calendar)
-- JWT para autenticação
+### Exemplos de Requisição
 
-### Frontend
-- React 18
-- React Router v7
-- Tailwind CSS
-- shadcn/ui components
-- Axios
-- Sonner (toasts)
-- Lucide Icons
+**Criar Sessão**
+```json
+POST /sessoes/create
+Authorization: Bearer <token>
+
+{
+  "tutorId": "64abc123def456",
+  "disciplina": "Cálculo I",
+  "data_hora_inicio": "2024-01-15T14:00:00.000Z",
+  "data_hora_fim": "2024-01-15T15:00:00.000Z",
+  "observacoes": "Preciso de ajuda com derivadas"
+}
+```
+
+**Atualizar Perfil**
+```json
+PUT /users/profile
+Authorization: Bearer <token>
+
+{
+  "bio": "Estudante de Ciência da Computação",
+  "localizacao": "São Paulo, SP",
+  "isTutor": true,
+  "disciplinas_dominadas": [
+    { "disciplina": "Programação I", "nivel": "Avançado" }
+  ],
+  "disciplinas_precisa": [
+    { "disciplina": "Cálculo II", "nivel_desejado": "Intermediário" }
+  ]
+}
+```
+
+## Uso
+
+### Fluxo do Usuário
+
+1. **Autenticação**: Usuários fazem login usando sua conta Google
+2. **Configuração do Perfil**: Novos usuários completam o processo de onboarding
+   - Selecionam papel (apenas aluno ou aluno e tutor)
+   - Adicionam disciplinas que precisam de ajuda
+   - Se tutor: adicionam disciplinas que podem ensinar
+3. **Dashboard**: Usuários podem buscar tutores e gerenciar sessões
+4. **Agendamento**: Alunos selecionam horários disponíveis e solicitam sessões
+5. **Gerenciamento de Sessões**: Tutores confirmam sessões; ambas as partes entram via Google Meet
+6. **Avaliação**: Após conclusão, alunos podem avaliar e comentar sobre tutores
+
+### Fluxo de Status da Sessão
+
+```
+Pendente -> Confirmada -> Concluída
+    |           |
+    v           v
+Cancelada   Cancelada
+```
+
+## Contribuição
+
+Contribuições são bem-vindas! Leia o [Guia de Contribuição](CONTRIBUTING.md) para informações detalhadas sobre:
+
+- Como configurar o ambiente de desenvolvimento
+- Fluxo de trabalho com Git e GitHub
+- Padrões de código e commits
+- Como abrir Pull Requests
+- Como reportar problemas
+
+Se você nunca contribuiu com um projeto open source antes, nosso guia foi feito especialmente para te ajudar a dar os primeiros passos.
+
+## Autor
+
+**Eduardo Amorim** - Idealizador e Desenvolvedor
+
+- GitHub: [@eduardoamorim-dev](https://github.com/eduardoamorim-dev)
+
+Este projeto foi desenvolvido como parte de uma pesquisa acadêmica durante a graduação.
+
+## Licença
+
+Este projeto está licenciado sob a Licença MIT. Veja o arquivo [LICENSE](LICENSE) para detalhes.
+
+---
+
+## Agradecimentos
+
+- **Prof. Junio Moreira** - Orientador da pesquisa acadêmica que originou este projeto
+- **Meus pais** - Pelo apoio incondicional durante toda a graduação
 
