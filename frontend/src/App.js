@@ -1,32 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import { Toaster } from 'sonner';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import ProfileSetup from './components/ProfileSetup';
-import Agendamento from './components/Agendamento';
-import Avaliacao from './components/Avaliacao';
+import Profile from './components/Profile';
 import "./index.css";
+
+const API_URL = 'http://localhost:5001';
 
 // Componente wrapper para verificar se precisa de onboarding
 function ProtectedRoute({ token, children }) {
   const [needsOnboarding, setNeedsOnboarding] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const checkProfile = async () => {
       try {
-        const res = await axios.get('http://localhost:5001/users/profile', {
+        const res = await axios.get(`${API_URL}/users/profile`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         
-        // Verifica se o usuário tem pelo menos disciplinas_dominadas OU disciplinas_precisa
-        const hasProfile = 
-          (res.data.disciplinas_dominadas && res.data.disciplinas_dominadas.length > 0) ||
-          (res.data.disciplinas_precisa && res.data.disciplinas_precisa.length > 0);
-        
-        setNeedsOnboarding(!hasProfile);
+        setNeedsOnboarding(!res.data.profileCompleted);
       } catch (error) {
         console.error('Erro ao verificar perfil:', error);
         setNeedsOnboarding(false);
@@ -48,17 +46,80 @@ function ProtectedRoute({ token, children }) {
     );
   }
 
-  // Se precisa de onboarding, redireciona
-  if (needsOnboarding) {
-    navigate('/setup-profile');
-    return null;
+  if (needsOnboarding && location.pathname !== '/setup-profile') {
+    return <Navigate to="/setup-profile" replace />;
   }
 
   return children;
 }
 
+// Componente de Navbar
+function Navbar({ user, onLogout }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  
+  const isActive = (path) => location.pathname === path;
+  
+  return (
+    <nav className="bg-white shadow-sm border-b sticky top-0 z-40">
+      <div className="container mx-auto px-6">
+        <div className="flex justify-between items-center h-16">
+          <div className="flex items-center gap-8">
+            <button 
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center gap-3"
+            >
+              <div className="w-9 h-9 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">TC</span>
+              </div>
+              <span className="text-xl font-bold text-gray-900">Tutor Connect</span>
+            </button>
+            
+            <div className="hidden md:flex items-center gap-1">
+              <button
+                onClick={() => navigate('/dashboard')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  isActive('/dashboard') 
+                    ? 'bg-violet-100 text-violet-700' 
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                Dashboard
+              </button>
+              <button
+                onClick={() => navigate('/profile')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  isActive('/profile') 
+                    ? 'bg-violet-100 text-violet-700' 
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                Meu Perfil
+              </button>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <div className="hidden sm:block text-right">
+              <p className="text-sm font-medium text-gray-900">{user?.nome}</p>
+              <p className="text-xs text-gray-500">{user?.isTutor ? 'Tutor' : 'Aluno'}</p>
+            </div>
+            <button
+              onClick={onLogout}
+              className="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            >
+              Sair
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+}
+
 function App() {
   const [token, setToken] = useState(localStorage.getItem('token'));
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -69,18 +130,20 @@ function App() {
     if (urlToken) {
       localStorage.setItem('token', urlToken);
       setToken(urlToken);
-      // Limpa a URL e redireciona para setup
-      window.history.replaceState({}, document.title, '/setup-profile');
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
     
     // Verifica validade do token
     const verifyToken = async () => {
-      if (token) {
+      const currentToken = urlToken || token;
+      if (currentToken) {
         try {
-          const res = await axios.get('http://localhost:5001/auth/verify', {
-            headers: { Authorization: `Bearer ${token}` }
+          const res = await axios.get(`${API_URL}/auth/verify`, {
+            headers: { Authorization: `Bearer ${currentToken}` }
           });
-          if (!res.data.valid) {
+          if (res.data.valid) {
+            setUser(res.data.user);
+          } else {
             localStorage.removeItem('token');
             setToken(null);
           }
@@ -93,11 +156,23 @@ function App() {
     };
     
     verifyToken();
-  }, [token]);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     setToken(null);
+    setUser(null);
+  };
+
+  const refreshUser = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/users/profile`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUser(res.data);
+    } catch (error) {
+      console.error('Erro ao atualizar usuário:', error);
+    }
   };
 
   if (loading) {
@@ -108,27 +183,13 @@ function App() {
     );
   }
 
+  const showNavbar = token && user?.profileCompleted;
+
   return (
     <Router>
-      <div className="min-h-screen bg-gray-100">
-        {token && window.location.pathname !== '/setup-profile' && window.location.pathname !== '/login' && (
-          <nav className="bg-white shadow-md p-4 mb-4">
-            <div className="container mx-auto flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">TC</span>
-                </div>
-                <h1 className="text-2xl font-bold text-gray-900">Tutor Connect</h1>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
-              >
-                Sair
-              </button>
-            </div>
-          </nav>
-        )}
+      <Toaster position="top-right" richColors />
+      <div className="min-h-screen bg-gray-50">
+        {showNavbar && <Navbar user={user} onLogout={handleLogout} />}
         
         <Routes>
           <Route 
@@ -138,14 +199,16 @@ function App() {
             } 
           />
           
-          {/* Rota de Setup/Onboarding */}
           <Route 
             path="/setup-profile" 
             element={
               token ? (
                 <ProfileSetup 
                   token={token} 
-                  onComplete={() => window.location.href = '/dashboard'}
+                  onComplete={() => {
+                    refreshUser();
+                    window.location.href = '/dashboard';
+                  }}
                 />
               ) : (
                 <Navigate to="/login" />
@@ -158,7 +221,7 @@ function App() {
             element={
               token ? (
                 <ProtectedRoute token={token}>
-                  <Dashboard token={token} />
+                  <Dashboard token={token} user={user} />
                 </ProtectedRoute>
               ) : (
                 <Navigate to="/login" />
@@ -167,24 +230,11 @@ function App() {
           />
           
           <Route 
-            path="/agendamento" 
+            path="/profile" 
             element={
               token ? (
                 <ProtectedRoute token={token}>
-                  <Agendamento token={token} />
-                </ProtectedRoute>
-              ) : (
-                <Navigate to="/login" />
-              )
-            } 
-          />
-          
-          <Route 
-            path="/avaliacao/:sessaoId" 
-            element={
-              token ? (
-                <ProtectedRoute token={token}>
-                  <Avaliacao token={token} />
+                  <Profile token={token} user={user} onUpdate={refreshUser} />
                 </ProtectedRoute>
               ) : (
                 <Navigate to="/login" />

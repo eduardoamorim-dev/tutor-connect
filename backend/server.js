@@ -5,11 +5,11 @@ require('dotenv').config();
 
 const authRoutes = require('./routes/auth');
 const sessaoRoutes = require('./routes/sessoes');
-const userRoutes = require('./routes/users'); // Nova rota
+const userRoutes = require('./routes/users');
 
 const app = express();
 
-// Configuração CORS detalhada
+// Configuração CORS
 app.use(cors({
   origin: 'http://localhost:3000',
   credentials: true,
@@ -30,7 +30,7 @@ mongoose.connect(process.env.MONGO_URI)
 // Rotas
 app.use('/auth', authRoutes);
 app.use('/sessoes', sessaoRoutes);
-app.use('/users', userRoutes); // Nova rota adicionada
+app.use('/users', userRoutes);
 
 // Rota de teste
 app.get('/', (req, res) => {

@@ -7,13 +7,6 @@ const router = express.Router();
 
 require('dotenv').config();
 
-// Debug das variáveis
-console.log('=== CONFIGURAÇÃO OAUTH ===');
-console.log('CLIENT_ID:', process.env.GOOGLE_CLIENT_ID);
-console.log('CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? '***' + process.env.GOOGLE_CLIENT_SECRET.slice(-4) : 'NÃO DEFINIDO');
-console.log('REDIRECT_URI:', process.env.GOOGLE_REDIRECT_URI);
-console.log('========================');
-
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
@@ -79,7 +72,8 @@ router.post('/login', async (req, res) => {
       user: {
         id: user._id,
         nome: user.nome,
-        email: user.email
+        email: user.email,
+        profileCompleted: user.profileCompleted
       }
     });
   } catch (error) {
@@ -91,8 +85,6 @@ router.post('/login', async (req, res) => {
 // Google OAuth
 router.get('/google', (req, res) => {
   try {
-    console.log('🔵 [GET /google] Iniciando autenticação Google...');
-    
     const url = oauth2Client.generateAuthUrl({
       access_type: 'offline',
       prompt: 'consent',
@@ -104,70 +96,38 @@ router.get('/google', (req, res) => {
       ]
     });
     
-    console.log('✅ [GET /google] URL gerada, redirecionando...');
     res.redirect(url);
   } catch (error) {
-    console.error('❌ [GET /google] Erro:', error);
+    console.error('Erro ao iniciar OAuth:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// Callback do Google - COM DEBUG COMPLETO
+// Callback do Google
 router.get('/google/callback', async (req, res) => {
-  console.log('🟡 [CALLBACK] Requisição recebida');
-  console.log('Query params:', req.query);
-  console.log('Headers:', req.headers);
-  
   try {
     const { code, error } = req.query;
     
     if (error) {
-      console.error('❌ [CALLBACK] Erro retornado pelo Google:', error);
-      return res.status(400).send(`Erro do Google: ${error}`);
+      return res.redirect(`http://localhost:3000/login?error=${error}`);
     }
     
     if (!code) {
-      console.error('❌ [CALLBACK] Código não recebido');
-      return res.status(400).send('Código de autorização não recebido');
+      return res.redirect('http://localhost:3000/login?error=no_code');
     }
-    
-    console.log('🔵 [CALLBACK] Código recebido:', code.substring(0, 20) + '...');
-    console.log('🔵 [CALLBACK] Trocando código por tokens...');
     
     // Troca código por tokens
-    let tokens;
-    try {
-      const tokenResponse = await oauth2Client.getToken(code);
-      tokens = tokenResponse.tokens;
-      console.log('✅ [CALLBACK] Tokens obtidos com sucesso');
-      console.log('Access Token:', tokens.access_token ? 'Presente' : 'Ausente');
-      console.log('Refresh Token:', tokens.refresh_token ? 'Presente' : 'Ausente');
-    } catch (tokenError) {
-      console.error('❌ [CALLBACK] Erro ao obter tokens:', tokenError.message);
-      return res.status(400).send('Erro ao obter tokens do Google');
-    }
-    
+    const { tokens } = await oauth2Client.getToken(code);
     oauth2Client.setCredentials(tokens);
     
     // Obter informações do usuário
-    console.log('🔵 [CALLBACK] Obtendo informações do usuário...');
-    let userInfo;
-    try {
-      const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
-      const { data } = await oauth2.userinfo.get();
-      userInfo = data;
-      console.log('✅ [CALLBACK] Informações obtidas:', userInfo.email);
-    } catch (userError) {
-      console.error('❌ [CALLBACK] Erro ao obter userinfo:', userError.message);
-      return res.status(400).send('Erro ao obter informações do usuário');
-    }
+    const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
+    const { data: userInfo } = await oauth2.userinfo.get();
     
     // Buscar ou criar usuário
-    console.log('🔵 [CALLBACK] Processando usuário no banco...');
     let user = await User.findOne({ email: userInfo.email });
     
     if (!user) {
-      console.log('🆕 [CALLBACK] Criando novo usuário...');
       const randomPassword = await bcrypt.hash(
         Math.random().toString(36) + Date.now().toString(36),
         10
@@ -176,10 +136,9 @@ router.get('/google/callback', async (req, res) => {
       user = new User({
         nome: userInfo.name || userInfo.email.split('@')[0],
         email: userInfo.email,
-        senha: randomPassword
+        senha: randomPassword,
+        googleId: userInfo.id
       });
-    } else {
-      console.log('👤 [CALLBACK] Usuário existente encontrado');
     }
     
     // Atualizar tokens
@@ -187,9 +146,11 @@ router.get('/google/callback', async (req, res) => {
     if (tokens.refresh_token) {
       user.googleRefreshToken = tokens.refresh_token;
     }
+    if (tokens.expiry_date) {
+      user.googleTokenExpiry = new Date(tokens.expiry_date);
+    }
     
     await user.save();
-    console.log('✅ [CALLBACK] Usuário salvo com sucesso');
     
     // Gerar JWT
     const jwtToken = jwt.sign(
@@ -197,18 +158,14 @@ router.get('/google/callback', async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '7d' }
     );
-    console.log('✅ [CALLBACK] JWT gerado');
     
-    // Redirecionar
-    const redirectUrl = `http://localhost:3000/dashboard?token=${jwtToken}`;
-    console.log('🔵 [CALLBACK] Redirecionando para:', redirectUrl);
-    
-    res.redirect(redirectUrl);
+    // Redirecionar baseado no status do perfil
+    const redirectPath = user.profileCompleted ? '/dashboard' : '/setup-profile';
+    res.redirect(`http://localhost:3000${redirectPath}?token=${jwtToken}`);
     
   } catch (error) {
-    console.error('❌ [CALLBACK] Erro geral:', error);
-    console.error('Stack:', error.stack);
-    res.status(500).send('Erro interno no servidor');
+    console.error('Erro no callback OAuth:', error);
+    res.redirect('http://localhost:3000/login?error=oauth_failed');
   }
 });
 
@@ -221,7 +178,11 @@ router.get('/verify', async (req, res) => {
     }
     
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id).select('-senha');
+    const user = await User.findById(decoded.id).select('-senha -googleAccessToken -googleRefreshToken');
+    
+    if (!user) {
+      return res.status(401).json({ valid: false });
+    }
     
     res.json({ valid: true, user });
   } catch (error) {
