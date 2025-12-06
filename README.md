@@ -1,5 +1,8 @@
 # Tutor Connect
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
 Uma plataforma colaborativa de tutoria entre pares que conecta estudantes que precisam de ajuda com aqueles que podem ensinar. Desenvolvida com React e Node.js.
 
 ## Sumário
@@ -113,7 +116,7 @@ Você também precisará de:
 ### Clonar o Repositório
 
 ```bash
-git clone https://github.com/seu-usuario/tutor-connect.git
+git clone https://github.com/eduardoamorim-dev/tutor-connect.git
 cd tutor-connect
 ```
 
@@ -282,13 +285,23 @@ Contribuições são bem-vindas! Leia o [Guia de Contribuição](CONTRIBUTING.md
 
 Se você nunca contribuiu com um projeto open source antes, nosso guia foi feito especialmente para te ajudar a dar os primeiros passos.
 
-## Autor
+## Mantenedores
 
-**Eduardo Amorim** - Idealizador e Desenvolvedor
+**Eduardo Amorim** - Criador e Mantenedor Principal
 
 - GitHub: [@eduardoamorim-dev](https://github.com/eduardoamorim-dev)
 
 Este projeto foi desenvolvido como parte de uma pesquisa acadêmica durante a graduação.
+
+## Contribuidores
+
+Agradecemos a todas as pessoas que contribuem para este projeto! ✨
+
+<a href="https://github.com/eduardoamorim-dev/tutor-connect/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=eduardoamorim-dev/tutor-connect" />
+</a>
+
+Quer aparecer aqui? Veja nosso [Guia de Contribuição](CONTRIBUTING.md)!
 
 ## Licença
 

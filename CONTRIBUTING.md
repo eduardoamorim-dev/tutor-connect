@@ -50,7 +50,7 @@ cd tutor-connect
 
 ```bash
 # Adiciona o repositório original como "upstream"
-git remote add upstream https://github.com/USUARIO-ORIGINAL/tutor-connect.git
+git remote add upstream https://github.com/eduardoamorim-dev/tutor-connect.git
 
 # Verifique se foi adicionado corretamente
 git remote -v
