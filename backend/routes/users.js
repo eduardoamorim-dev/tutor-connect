@@ -38,11 +38,12 @@ router.get('/tutores', authMiddleware, async (req, res) => {
       query['disponibilidade.dia'] = dia;
     }
     
+    // Permitir tutores mesmo sem disciplinas/disponibilidade
     const tutores = await User.find(
       query,
       'nome email bio disciplinas_dominadas disponibilidade localizacao rating total_avaliacoes total_sessoes'
     ).sort({ rating: -1, total_sessoes: -1 });
-    
+        
     res.json(tutores);
   } catch (error) {
     res.status(400).json({ error: error.message });

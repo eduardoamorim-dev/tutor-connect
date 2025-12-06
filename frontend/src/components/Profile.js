@@ -210,11 +210,10 @@ function Profile({ token, user, onUpdate }) {
   };
 
   const handleSave = async () => {
+    // Permitir salvar perfil como tutor mesmo sem disciplinas
     if (formData.isTutor && formData.disciplinas_dominadas.length === 0) {
-      toast.error('Adicione pelo menos uma disciplina que você domina');
-      return;
+      toast.warning('Você será listado como tutor, mas precisa adicionar disciplinas para aparecer nas buscas.');
     }
-    
     try {
       setLoading(true);
       await axios.put(`${API_URL}/users/profile`, {

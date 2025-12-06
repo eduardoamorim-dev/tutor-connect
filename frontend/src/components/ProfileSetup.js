@@ -73,8 +73,14 @@ function ProfileSetup({ token, onComplete }) {
   };
 
   const handleSave = async () => {
-    if (formData.disciplinas_precisa.length === 0) { toast.error('Adicione pelo menos uma disciplina que você precisa'); return; }
-    if (formData.isTutor && formData.disciplinas_dominadas.length === 0) { toast.error('Como tutor, adicione disciplinas que você domina'); return; }
+    // Permitir salvar perfil como tutor mesmo sem disciplinas/disponibilidade
+    if (formData.isTutor && formData.disciplinas_dominadas.length === 0) {
+      toast.warning('Você será listado como tutor, mas precisa adicionar disciplinas para aparecer nas buscas.');
+    }
+    if (formData.disciplinas_precisa.length === 0) {
+      toast.error('Adicione pelo menos uma disciplina que você precisa');
+      return;
+    }
     try {
       setLoading(true);
       await axios.put(`${API_URL}/users/profile`, formData, { headers });
