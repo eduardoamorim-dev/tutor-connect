@@ -14,7 +14,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from './ui/select';
-import { Calendar, Clock, Users, Video, Search, Loader2, Star, CheckCircle, XCircle, MapPin } from 'lucide-react';
+import { Calendar, Clock, Users, Video, Search, Loader2, Star, CheckCircle, XCircle, MapPin, MessageSquare, Eye } from 'lucide-react';
 
 const API_URL = 'http://localhost:5001';
 
@@ -44,6 +44,12 @@ function Dashboard({ token, user }) {
   const [motivoCancelamento, setMotivoCancelamento] = useState('');
   const [cancelamentoLoading, setCancelamentoLoading] = useState(false);
 
+  // Novo estado para modal de detalhes do tutor
+  const [showDetalhesTutor, setShowDetalhesTutor] = useState(false);
+  const [tutorDetalhes, setTutorDetalhes] = useState(null);
+  const [avaliacoesTutor, setAvaliacoesTutor] = useState([]);
+  const [loadingAvaliacoes, setLoadingAvaliacoes] = useState(false);
+
   const headers = { Authorization: `Bearer ${token}` };
 
   useEffect(() => { fetchData(); }, [token]);
@@ -67,7 +73,6 @@ function Dashboard({ token, user }) {
   const getInitials = (name) => name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2);
   const formatDate = (date) => new Date(date).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
   const formatDateFull = (date) => {
-    // Se for string no formato YYYY-MM-DD, adiciona T12:00:00 para evitar timezone
     const dateStr = typeof date === 'string' && date.match(/^\d{4}-\d{2}-\d{2}$/) 
       ? date + 'T12:00:00' 
       : date;
@@ -75,11 +80,36 @@ function Dashboard({ token, user }) {
   };
 
   const formatTime = (date) => new Date(date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+  // Função para abrir modal de detalhes do tutor
+  const abrirDetalhesTutor = async (tutor) => {
+    setTutorDetalhes(tutor);
+    setShowDetalhesTutor(true);
+    setLoadingAvaliacoes(true);
+    
+    try {
+      const res = await axios.get(`${API_URL}/sessoes/avaliacoes/tutor/${tutor._id}`, { headers });
+      setAvaliacoesTutor(res.data);
+    } catch (error) {
+      console.error('Erro ao carregar avaliações:', error);
+      setAvaliacoesTutor([]);
+    } finally {
+      setLoadingAvaliacoes(false);
+    }
+  };
+
+  const fecharDetalhesTutor = () => {
+    setShowDetalhesTutor(false);
+    setTutorDetalhes(null);
+    setAvaliacoesTutor([]);
+  };
+
   const abrirModalAgendamento = async (tutor) => {
     setTutorSelecionado(tutor);
     setAgendamentoForm({ disciplina: tutor.disciplinas_dominadas[0]?.disciplina || '', observacoes: '' });
     setSlotSelecionado(null);
     setShowAgendamento(true);
+    setShowDetalhesTutor(false);
     try {
       setLoadingDisponibilidade(true);
       const res = await axios.get(`${API_URL}/users/tutor/${tutor._id}/disponibilidade`, { headers });
@@ -143,7 +173,6 @@ function Dashboard({ token, user }) {
   const getStatusColor = (s) => ({ 'Pendente': 'bg-yellow-100 text-yellow-700', 'Confirmada': 'bg-green-100 text-green-700', 'Concluída': 'bg-blue-100 text-blue-700', 'Cancelada': 'bg-red-100 text-red-700' }[s] || 'bg-gray-100');
 
   const disponibilidadesPorData = disponibilidades.reduce((acc, d) => {
-    // Usar data local em vez de toISOString (que converte para UTC)
     const date = new Date(d.data);
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -186,10 +215,30 @@ function Dashboard({ token, user }) {
                       <div className="text-center w-full">
                         <h3 className="text-xl font-semibold">{tutor.nome}</h3>
                         {tutor.localizacao && <p className="text-sm text-gray-500 flex items-center justify-center gap-1 mt-1"><MapPin className="w-3 h-3" />{tutor.localizacao}</p>}
-                        {tutor.rating > 0 && <div className="flex items-center justify-center gap-1 mt-2"><Star className="w-4 h-4 fill-yellow-400 text-yellow-400" /><span className="font-medium">{tutor.rating.toFixed(1)}</span><span className="text-gray-400 text-sm">({tutor.total_avaliacoes})</span></div>}
+                        {tutor.rating > 0 && (
+                          <button 
+                            onClick={() => abrirDetalhesTutor(tutor)}
+                            className="flex items-center justify-center gap-1 mt-2 hover:bg-gray-100 px-2 py-1 rounded-lg transition-colors"
+                          >
+                            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                            <span className="font-medium">{tutor.rating.toFixed(1)}</span>
+                            <span className="text-gray-400 text-sm">({tutor.total_avaliacoes} {tutor.total_avaliacoes === 1 ? 'avaliação' : 'avaliações'})</span>
+                          </button>
+                        )}
                       </div>
                       <div className="w-full"><p className="text-sm text-gray-500 mb-2">Disciplinas:</p><div className="flex flex-wrap gap-2">{tutor.disciplinas_dominadas.slice(0, 3).map((d, i) => <Badge key={i} className="bg-violet-100 text-violet-700">{d.disciplina}</Badge>)}{tutor.disciplinas_dominadas.length > 3 && <Badge variant="outline">+{tutor.disciplinas_dominadas.length - 3}</Badge>}</div></div>
-                      {tutor.disponibilidade?.length > 0 ? <Button className="w-full bg-violet-600 hover:bg-violet-700" onClick={() => abrirModalAgendamento(tutor)}><Calendar className="w-4 h-4 mr-2" />Agendar</Button> : <p className="text-sm text-gray-400">Sem horários disponíveis</p>}
+                      <div className="w-full flex gap-2">
+                        <Button variant="outline" className="flex-1" onClick={() => abrirDetalhesTutor(tutor)}>
+                          <Eye className="w-4 h-4 mr-2" />Ver Perfil
+                        </Button>
+                        {tutor.disponibilidade?.length > 0 ? (
+                          <Button className="flex-1 bg-violet-600 hover:bg-violet-700" onClick={() => abrirModalAgendamento(tutor)}>
+                            <Calendar className="w-4 h-4 mr-2" />Agendar
+                          </Button>
+                        ) : (
+                          <Button className="flex-1" disabled variant="outline">Sem horários</Button>
+                        )}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -223,6 +272,136 @@ function Dashboard({ token, user }) {
         )}
       </div>
 
+      {/* Modal de Detalhes do Tutor com Avaliações */}
+      <Dialog open={showDetalhesTutor} onOpenChange={setShowDetalhesTutor}>
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Perfil do Tutor</DialogTitle>
+          </DialogHeader>
+          
+          {tutorDetalhes && (
+            <div className="space-y-6">
+              {/* Informações do Tutor */}
+              <div className="flex items-start gap-4 p-4 bg-violet-50 rounded-lg">
+                <Avatar className="h-16 w-16">
+                  <AvatarFallback className="bg-violet-200 text-violet-700 text-xl">
+                    {getInitials(tutorDetalhes.nome)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1">
+                  <h3 className="text-xl font-semibold text-gray-900">{tutorDetalhes.nome}</h3>
+                  {tutorDetalhes.localizacao && (
+                    <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
+                      <MapPin className="w-3 h-3" />{tutorDetalhes.localizacao}
+                    </p>
+                  )}
+                  <div className="flex items-center gap-4 mt-2">
+                    {tutorDetalhes.rating > 0 && (
+                      <div className="flex items-center gap-1">
+                        <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                        <span className="font-semibold text-lg">{tutorDetalhes.rating.toFixed(1)}</span>
+                        <span className="text-gray-500 text-sm">({tutorDetalhes.total_avaliacoes})</span>
+                      </div>
+                    )}
+                    <div className="text-sm text-gray-500">
+                      {tutorDetalhes.total_sessoes || 0} sessões realizadas
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bio */}
+              {tutorDetalhes.bio && (
+                <div>
+                  <h4 className="font-medium text-gray-900 mb-2">Sobre</h4>
+                  <p className="text-gray-600 text-sm">{tutorDetalhes.bio}</p>
+                </div>
+              )}
+
+              {/* Disciplinas */}
+              <div>
+                <h4 className="font-medium text-gray-900 mb-2">Disciplinas que ensina</h4>
+                <div className="flex flex-wrap gap-2">
+                  {tutorDetalhes.disciplinas_dominadas.map((d, i) => (
+                    <Badge key={i} className="bg-violet-100 text-violet-700">
+                      {d.disciplina} • {d.nivel}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+
+              {/* Avaliações e Comentários */}
+              <div>
+                <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4" />
+                  Avaliações e Comentários
+                </h4>
+                
+                {loadingAvaliacoes ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-violet-600" />
+                  </div>
+                ) : avaliacoesTutor.length > 0 ? (
+                  <div className="space-y-4 max-h-[300px] overflow-y-auto">
+                    {avaliacoesTutor.map((avaliacao) => (
+                      <div key={avaliacao._id} className="border rounded-lg p-4 bg-white">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-8 w-8">
+                              <AvatarFallback className="bg-gray-100 text-gray-600 text-xs">
+                                {getInitials(avaliacao.aluno?.nome || 'Anônimo')}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium text-sm">{avaliacao.aluno?.nome || 'Anônimo'}</p>
+                              <p className="text-xs text-gray-500">
+                                {avaliacao.sessao?.disciplina && `${avaliacao.sessao.disciplina} • `}
+                                {new Date(avaliacao.data).toLocaleDateString('pt-BR')}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <Star
+                                key={star}
+                                className={`w-4 h-4 ${star <= avaliacao.nota ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        {avaliacao.comentario && (
+                          <p className="text-gray-600 text-sm mt-2 pl-10">
+                            "{avaliacao.comentario}"
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-400 border rounded-lg">
+                    <MessageSquare className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                    <p>Nenhuma avaliação ainda</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={fecharDetalhesTutor}>Fechar</Button>
+            {tutorDetalhes?.disponibilidade?.length > 0 && (
+              <Button 
+                className="bg-violet-600 hover:bg-violet-700" 
+                onClick={() => abrirModalAgendamento(tutorDetalhes)}
+              >
+                <Calendar className="w-4 h-4 mr-2" />Agendar Sessão
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Agendamento */}
       <Dialog open={showAgendamento} onOpenChange={setShowAgendamento}>
         <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Agendar Sessão</DialogTitle><DialogDescription>{tutorSelecionado && <div className="flex items-center gap-3 mt-3 p-3 bg-violet-50 rounded-lg"><Avatar><AvatarFallback className="bg-violet-100 text-violet-700">{getInitials(tutorSelecionado.nome)}</AvatarFallback></Avatar><div><p className="font-semibold text-gray-900">{tutorSelecionado.nome}</p>{tutorSelecionado.rating > 0 && <p className="text-sm flex items-center gap-1"><Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />{tutorSelecionado.rating.toFixed(1)}</p>}</div></div>}</DialogDescription></DialogHeader>
@@ -244,13 +423,15 @@ function Dashboard({ token, user }) {
         </DialogContent>
       </Dialog>
 
+      {/* Modal de Avaliação */}
       <Dialog open={showAvaliacao} onOpenChange={setShowAvaliacao}>
         <DialogContent><DialogHeader><DialogTitle>Avaliar Sessão</DialogTitle><DialogDescription>Como foi sua experiência?</DialogDescription></DialogHeader>
-          <div className="space-y-4 py-4"><div><Label>Nota</Label><div className="flex gap-2">{[1,2,3,4,5].map(n => <button key={n} onClick={() => setAvaliacaoForm({...avaliacaoForm, nota: n})} className={`p-2 ${avaliacaoForm.nota >= n ? 'text-yellow-400' : 'text-gray-300'}`}><Star className={`w-8 h-8 ${avaliacaoForm.nota >= n ? 'fill-current' : ''}`} /></button>)}</div></div><div><Label>Comentário</Label><Textarea value={avaliacaoForm.comentario} onChange={(e) => setAvaliacaoForm({...avaliacaoForm, comentario: e.target.value})} rows={3} /></div></div>
+          <div className="space-y-4 py-4"><div><Label>Nota</Label><div className="flex gap-2">{[1,2,3,4,5].map(n => <button key={n} onClick={() => setAvaliacaoForm({...avaliacaoForm, nota: n})} className={`p-2 ${avaliacaoForm.nota >= n ? 'text-yellow-400' : 'text-gray-300'}`}><Star className={`w-8 h-8 ${avaliacaoForm.nota >= n ? 'fill-current' : ''}`} /></button>)}</div></div><div><Label>Comentário (opcional)</Label><Textarea placeholder="Conte como foi sua experiência..." value={avaliacaoForm.comentario} onChange={(e) => setAvaliacaoForm({...avaliacaoForm, comentario: e.target.value})} rows={3} /></div></div>
           <DialogFooter><Button variant="outline" onClick={() => setShowAvaliacao(false)}>Cancelar</Button><Button onClick={handleAvaliar} disabled={avaliacaoLoading} className="bg-violet-600">{avaliacaoLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Enviar'}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 
+      {/* Modal de Cancelamento */}
       <Dialog open={showCancelamento} onOpenChange={setShowCancelamento}>
         <DialogContent><DialogHeader><DialogTitle>Cancelar Sessão</DialogTitle></DialogHeader>
           <div className="py-4"><Label>Motivo (opcional)</Label><Textarea value={motivoCancelamento} onChange={(e) => setMotivoCancelamento(e.target.value)} rows={2} className="mt-2" /></div>
