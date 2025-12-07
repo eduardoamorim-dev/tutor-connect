@@ -1,3 +1,5 @@
+<!-- Preencha todos os campos abaixo para facilitar a revisão do seu Pull Request. -->
+
 ## Descrição
 
 Descreva as alterações realizadas.

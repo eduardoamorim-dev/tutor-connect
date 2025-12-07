@@ -187,6 +187,18 @@ git push origin feat/42/filtro-por-localizacao
 4. Adicione screenshots se houver alterações visuais
 5. Solicite revisão de outros contribuidores
 
+#### Templates de Contribuição
+
+O template de Pull Request é aplicado automaticamente ao abrir um PR.
+
+Os templates para issues (ex: bug report, sugestão de funcionalidade) estão disponíveis em:
+
+```
+/docs/templates/
+```
+
+Esses templates **não são aplicados automaticamente** ao abrir uma issue. Portanto, copie manualmente o conteúdo do template desejado e preencha os campos solicitados ao criar sua issue.
+
 ---
 
 ## Padrões do Projeto
