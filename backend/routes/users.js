@@ -153,65 +153,65 @@ router.post("/disponibilidade", authMiddleware, async (req, res) => {
         .json({ error: "Apenas tutores podem adicionar disponibilidade" });
     }
 
-    // Criar data com horário de início para validação completa
+    // Extrair componentes da data para evitar problemas de timezone
+    const [ano, mes, dia] = data.split("-").map(Number);
     const [horaInicio, minutoInicio] = horario_inicio.split(":").map(Number);
     const [horaFim, minutoFim] = horario_fim.split(":").map(Number);
 
-    // Criar objeto de data/hora completo para o início
-    const dataHoraInicio = new Date(data + "T" + horario_inicio + ":00");
-    const dataHoraFim = new Date(data + "T" + horario_fim + ":00");
+    // Criar objeto de data/hora completo usando timezone local
+    const dataHoraInicio = new Date(
+      ano,
+      mes - 1,
+      dia,
+      horaInicio,
+      minutoInicio,
+      0,
+      0,
+    );
+    const dataHoraFim = new Date(ano, mes - 1, dia, horaFim, minutoFim, 0, 0);
     const agora = new Date();
 
+    console.log("Data/hora início (local):", dataHoraInicio.toString());
+    console.log("Data/hora fim (local):", dataHoraFim.toString());
+    console.log("Agora:", agora.toString());
+
     // Verificar se a data/hora de início já passou
-    if (dataHoraInicio <= agora) {
-      return res
-        .status(400)
-        .json({
-          error:
-            "Não é possível adicionar disponibilidade para data/hora que já passou",
-        });
+    if (dataHoraInicio < agora) {
+      return res.status(400).json({
+        error:
+          "Não é possível adicionar disponibilidade para data/hora que já passou",
+      });
     }
 
     // Verificar se horário de fim é depois do início
     if (dataHoraFim <= dataHoraInicio) {
-      return res
-        .status(400)
-        .json({
-          error: "O horário de fim deve ser depois do horário de início",
-        });
+      return res.status(400).json({
+        error: "O horário de fim deve ser depois do horário de início",
+      });
     }
 
-    // Extrair ano, mês e dia da data de input para comparação precisa
-    const dataInput = new Date(data + "T12:00:00");
-    const anoInput = dataInput.getFullYear();
-    const mesInput = dataInput.getMonth();
-    const diaInput = dataInput.getDate();
-
-    console.log("Data input parseada:", {
-      ano: anoInput,
-      mes: mesInput,
-      dia: diaInput,
-    });
+    console.log("Data input:", { ano, mes, dia });
     console.log("Disponibilidades existentes:", user.disponibilidade.length);
 
     // Verificar se já existe disponibilidade conflitante
+    // IMPORTANTE: Comparar usando a string da data original (YYYY-MM-DD) para evitar problemas de timezone
     const conflito = user.disponibilidade.some((d) => {
+      // Extrair a data no formato YYYY-MM-DD da disponibilidade existente
       const dataExistente = new Date(d.data);
-      const anoExist = dataExistente.getFullYear();
-      const mesExist = dataExistente.getMonth();
-      const diaExist = dataExistente.getDate();
+      // Usar UTC para extrair os componentes, já que MongoDB salva em UTC
+      const anoExist = dataExistente.getUTCFullYear();
+      const mesExist = dataExistente.getUTCMonth() + 1; // getUTCMonth retorna 0-11
+      const diaExist = dataExistente.getUTCDate();
 
       console.log(`Comparando com disponibilidade existente:`, {
         dataExistente: d.data,
-        anoExist,
-        mesExist,
-        diaExist,
+        extraido: { anoExist, mesExist, diaExist },
+        novo: { ano, mes, dia },
         horarioExist: `${d.horario_inicio} - ${d.horario_fim}`,
       });
 
-      // Verifica se é o mesmo dia
-      const mesmoDia =
-        anoExist === anoInput && mesExist === mesInput && diaExist === diaInput;
+      // Verifica se é o mesmo dia (comparando ano, mês e dia diretamente)
+      const mesmoDia = anoExist === ano && mesExist === mes && diaExist === dia;
 
       console.log(`Mesmo dia? ${mesmoDia}`);
 
@@ -249,8 +249,11 @@ router.post("/disponibilidade", authMiddleware, async (req, res) => {
     console.log("Nenhum conflito, adicionando disponibilidade...");
 
     // Adicionar nova disponibilidade
+    // Salvar a data como UTC ao meio-dia para consistência
+    const dataParaSalvar = new Date(Date.UTC(ano, mes - 1, dia, 12, 0, 0, 0));
+
     user.disponibilidade.push({
-      data: new Date(data + "T12:00:00"),
+      data: dataParaSalvar,
       horario_inicio,
       horario_fim,
     });
@@ -277,14 +280,30 @@ router.get("/tutor/:id/disponibilidade", authMiddleware, async (req, res) => {
       return res.status(404).json({ error: "Tutor não encontrado" });
     }
 
-    // Filtrar apenas disponibilidades futuras (a partir de hoje)
-    const hoje = new Date();
-    hoje.setHours(0, 0, 0, 0);
+    const agora = new Date();
 
+    // Filtrar apenas disponibilidades futuras (considerando data E horário)
     const disponibilidadesFuturas = tutor.disponibilidade.filter((d) => {
       const dataDisp = new Date(d.data);
-      dataDisp.setHours(0, 0, 0, 0);
-      return dataDisp >= hoje;
+      // Usar UTC para consistência
+      const anoDisp = dataDisp.getUTCFullYear();
+      const mesDisp = dataDisp.getUTCMonth();
+      const diaDisp = dataDisp.getUTCDate();
+
+      // Criar data/hora de fim do slot no timezone local
+      const [horaFim, minFim] = d.horario_fim.split(":").map(Number);
+      const dataHoraFim = new Date(
+        anoDisp,
+        mesDisp,
+        diaDisp,
+        horaFim,
+        minFim,
+        0,
+        0,
+      );
+
+      // Só incluir se o horário de fim ainda não passou
+      return dataHoraFim > agora;
     });
 
     // Ordenar por data
@@ -294,24 +313,24 @@ router.get("/tutor/:id/disponibilidade", authMiddleware, async (req, res) => {
     const Sessao = require("../models/Sessao");
     const sessoesAgendadas = await Sessao.find({
       tutor: req.params.id,
-      data_hora_inicio: { $gte: hoje },
+      data_hora_inicio: { $gte: agora },
       status: { $in: ["Pendente", "Confirmada"] },
     }).select("data_hora_inicio data_hora_fim");
 
     // Marcar slots já agendados - comparando data E horário corretamente
     const disponibilidadesComStatus = disponibilidadesFuturas.map((d) => {
-      // Extrair ano, mês e dia da disponibilidade
+      // Extrair ano, mês e dia da disponibilidade usando UTC
       const dataDisp = new Date(d.data);
-      const anoDisp = dataDisp.getFullYear();
-      const mesDisp = dataDisp.getMonth();
-      const diaDisp = dataDisp.getDate();
+      const anoDisp = dataDisp.getUTCFullYear();
+      const mesDisp = dataDisp.getUTCMonth();
+      const diaDisp = dataDisp.getUTCDate();
 
       const [horaInicioDisp, minInicioDisp] = d.horario_inicio
         .split(":")
         .map(Number);
       const [horaFimDisp, minFimDisp] = d.horario_fim.split(":").map(Number);
 
-      // Criar datetime completo do slot de disponibilidade
+      // Criar datetime completo do slot de disponibilidade (timezone local)
       const inicioSlot = new Date(
         anoDisp,
         mesDisp,
@@ -379,14 +398,23 @@ router.delete("/disponibilidade/:id", authMiddleware, async (req, res) => {
     const disp = user.disponibilidade[disponibilidadeIndex];
 
     const dataDisp = new Date(disp.data);
+    const anoDisp = dataDisp.getUTCFullYear();
+    const mesDisp = dataDisp.getUTCMonth();
+    const diaDisp = dataDisp.getUTCDate();
+
     const [horaInicio, minInicio] = disp.horario_inicio.split(":").map(Number);
     const [horaFim, minFim] = disp.horario_fim.split(":").map(Number);
 
-    const inicioSlot = new Date(dataDisp);
-    inicioSlot.setHours(horaInicio, minInicio, 0, 0);
-
-    const fimSlot = new Date(dataDisp);
-    fimSlot.setHours(horaFim, minFim, 0, 0);
+    const inicioSlot = new Date(
+      anoDisp,
+      mesDisp,
+      diaDisp,
+      horaInicio,
+      minInicio,
+      0,
+      0,
+    );
+    const fimSlot = new Date(anoDisp, mesDisp, diaDisp, horaFim, minFim, 0, 0);
 
     const sessaoExistente = await Sessao.findOne({
       tutor: req.userId,
@@ -410,6 +438,18 @@ router.delete("/disponibilidade/:id", authMiddleware, async (req, res) => {
       message: "Disponibilidade removida",
       disponibilidade: user.disponibilidade,
     });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Retornar contagem de alunos e tutores
+router.get("/contagem", async (req, res) => {
+  try {
+    // contar apenas usuários com email confirmado (email existe) e não removidos
+    const totalTutores = await User.countDocuments({ isTutor: true, email: { $exists: true, $ne: "" } });
+    const totalAlunos = await User.countDocuments({ email: { $exists: true, $ne: "" } });
+    res.json({ totalTutores, totalAlunos });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }

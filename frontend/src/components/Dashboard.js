@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import axios from "axios";
 import { toast } from "sonner";
 import { Card, CardContent } from "./ui/card";
@@ -42,6 +43,15 @@ const API_URL = "http://localhost:5001";
 
 function Dashboard({ token, user }) {
   const [activeTab, setActiveTab] = useState("tutores");
+  const [searchParams] = useSearchParams();
+
+  // Verificar se deve abrir na aba de sessões (vindo de notificação)
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "sessoes") {
+      setActiveTab("sessoes");
+    }
+  }, [searchParams]);
   const [tutores, setTutores] = useState([]);
   const [sessoes, setSessoes] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -297,16 +307,36 @@ function Dashboard({ token, user }) {
       Cancelada: "bg-red-100 text-red-700",
     })[s] || "bg-gray-100";
 
+  const agora = new Date();
+
   const disponibilidadesPorData = disponibilidades.reduce((acc, d) => {
     const date = new Date(d.data);
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const k = `${year}-${month}-${day}`;
-    if (!acc[k]) acc[k] = [];
-    acc[k].push(d);
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(date.getUTCDate()).padStart(2, "0");
+
+    // Verificar se o horário já passou
+    const [horaFim, minFim] = d.horario_fim.split(":").map(Number);
+    const dataHoraFim = new Date(
+      year,
+      date.getUTCMonth(),
+      date.getUTCDate(),
+      horaFim,
+      minFim,
+      0,
+      0,
+    );
+
+    // Só adiciona se ainda não passou
+    if (dataHoraFim > agora) {
+      const k = `${year}-${month}-${day}`;
+      if (!acc[k]) acc[k] = [];
+      acc[k].push(d);
+    }
+
     return acc;
   }, {});
+
   const datasDisponiveis = Object.keys(disponibilidadesPorData).sort();
 
   if (loading)

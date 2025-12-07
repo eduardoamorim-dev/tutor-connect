@@ -291,23 +291,42 @@ function Profile({ token, user, onUpdate }) {
     }
   };
 
+  const agora = new Date();
+
   const disponibilidadesPorData = formData.disponibilidade.reduce(
     (acc, disp) => {
-      // Usar data local em vez de UTC
+      // Usar UTC para extrair a data (consistente com como salvamos)
       const date = new Date(disp.data);
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, "0");
-      const day = String(date.getDate()).padStart(2, "0");
-      const dataKey = `${year}-${month}-${day}`;
-      if (!acc[dataKey]) acc[dataKey] = [];
-      acc[dataKey].push(disp);
+      const year = date.getUTCFullYear();
+      const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+      const day = String(date.getUTCDate()).padStart(2, "0");
+
+      // Verificar se o horário já passou
+      const [horaFim, minFim] = disp.horario_fim.split(":").map(Number);
+      const dataHoraFim = new Date(
+        year,
+        date.getUTCMonth(),
+        date.getUTCDate(),
+        horaFim,
+        minFim,
+        0,
+        0,
+      );
+
+      // Só adiciona se ainda não passou
+      if (dataHoraFim > agora) {
+        const dataKey = `${year}-${month}-${day}`;
+        if (!acc[dataKey]) acc[dataKey] = [];
+        acc[dataKey].push(disp);
+      }
+
       return acc;
     },
     {},
   );
 
   const datasOrdenadas = Object.keys(disponibilidadesPorData).sort();
-  const hoje = new Date().toISOString().split("T")[0];
+  const hoje = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, "0")}-${String(agora.getDate()).padStart(2, "0")}`;
 
   if (loadingProfile) {
     return (

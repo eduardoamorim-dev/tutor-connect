@@ -346,10 +346,10 @@ router.put("/:id/concluir", authMiddleware, async (req, res) => {
     // Notificar ambos sobre conclusão
     const tutor = await User.findById(sessao.tutor);
     const aluno = await User.findById(sessao.aluno);
-    
+
     await notificarSessaoConcluida(sessao, sessao.tutor, aluno.nome);
     await notificarSessaoConcluida(sessao, sessao.aluno, tutor.nome);
-    
+
     // Notificar aluno para avaliar
     await notificarAvaliacaoPendente(sessao, tutor.nome);
 
@@ -422,11 +422,15 @@ router.put("/:id/cancelar", authMiddleware, async (req, res) => {
 
     // Notificar a outra parte sobre o cancelamento
     const quemCancelou = await User.findById(req.userId);
-    const destinatario = sessao.tutor.toString() === req.userId 
-      ? sessao.aluno 
-      : sessao.tutor;
-    
-    await notificarSessaoCancelada(sessao, req.userId, quemCancelou.nome, destinatario);
+    const destinatario =
+      sessao.tutor.toString() === req.userId ? sessao.aluno : sessao.tutor;
+
+    await notificarSessaoCancelada(
+      sessao,
+      req.userId,
+      quemCancelou.nome,
+      destinatario,
+    );
 
     const sessaoPopulada = await Sessao.findById(sessao._id)
       .populate("tutor", "nome email")

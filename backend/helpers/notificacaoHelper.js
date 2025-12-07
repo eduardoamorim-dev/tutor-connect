@@ -1,7 +1,13 @@
 const Notificacao = require("../models/Notificacao");
 
 // Helper para criar notificações
-const criarNotificacao = async (usuario, tipo, titulo, mensagem, sessaoId = null) => {
+const criarNotificacao = async (
+  usuario,
+  tipo,
+  titulo,
+  mensagem,
+  sessaoId = null,
+) => {
   try {
     const notificacao = new Notificacao({
       usuario,
@@ -20,48 +26,59 @@ const criarNotificacao = async (usuario, tipo, titulo, mensagem, sessaoId = null
 
 // Notificação: Sessão agendada (para o tutor)
 const notificarSessaoAgendada = async (sessao, nomeAluno) => {
-  const dataFormatada = new Date(sessao.data_hora_inicio).toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const dataFormatada = new Date(sessao.data_hora_inicio).toLocaleDateString(
+    "pt-BR",
+    {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    },
+  );
 
   return criarNotificacao(
     sessao.tutor,
     "sessao_agendada",
     "Nova sessão agendada!",
     `${nomeAluno} agendou uma sessão de ${sessao.disciplina} para ${dataFormatada}`,
-    sessao._id
+    sessao._id,
   );
 };
 
 // Notificação: Sessão confirmada (para o aluno)
 const notificarSessaoConfirmada = async (sessao, nomeTutor) => {
-  const dataFormatada = new Date(sessao.data_hora_inicio).toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const dataFormatada = new Date(sessao.data_hora_inicio).toLocaleDateString(
+    "pt-BR",
+    {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    },
+  );
 
   return criarNotificacao(
     sessao.aluno,
     "sessao_confirmada",
     "Sessão confirmada!",
     `${nomeTutor} confirmou sua sessão de ${sessao.disciplina} para ${dataFormatada}`,
-    sessao._id
+    sessao._id,
   );
 };
 
 // Notificação: Sessão cancelada
-const notificarSessaoCancelada = async (sessao, canceladoPor, nomeQuemCancelou, destinatario) => {
+const notificarSessaoCancelada = async (
+  sessao,
+  canceladoPor,
+  nomeQuemCancelou,
+  destinatario,
+) => {
   return criarNotificacao(
     destinatario,
     "sessao_cancelada",
     "Sessão cancelada",
     `${nomeQuemCancelou} cancelou a sessão de ${sessao.disciplina}${sessao.motivo_cancelamento ? `: "${sessao.motivo_cancelamento}"` : ""}`,
-    sessao._id
+    sessao._id,
   );
 };
 
@@ -72,7 +89,7 @@ const notificarSessaoConcluida = async (sessao, destinatario, nomeOutro) => {
     "sessao_concluida",
     "Sessão concluída!",
     `Sua sessão de ${sessao.disciplina} com ${nomeOutro} foi concluída`,
-    sessao._id
+    sessao._id,
   );
 };
 
@@ -83,7 +100,7 @@ const notificarAvaliacaoPendente = async (sessao, nomeTutor) => {
     "avaliacao_pendente",
     "Avalie sua sessão!",
     `Como foi sua sessão de ${sessao.disciplina} com ${nomeTutor}? Deixe sua avaliação!`,
-    sessao._id
+    sessao._id,
   );
 };
 
@@ -95,7 +112,7 @@ const notificarAvaliacaoRecebida = async (avaliacao, sessao, nomeAluno) => {
     "avaliacao_recebida",
     "Nova avaliação recebida!",
     `${nomeAluno} avaliou sua sessão de ${sessao.disciplina} com ${estrelas}`,
-    sessao._id
+    sessao._id,
   );
 };
 

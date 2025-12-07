@@ -31,6 +31,7 @@ Tutor Connect é uma aplicação web projetada para facilitar a tutoria entre es
 - Agendar sessões de tutoria
 - Participar de sessões via links integrados do Google Meet
 - Avaliar e comentar sessões concluídas
+- Receber notificações sobre sessões e avaliações
 
 ### Para Tutores
 
@@ -39,6 +40,7 @@ Tutor Connect é uma aplicação web projetada para facilitar a tutoria entre es
 - Confirmar ou recusar solicitações de sessão
 - Acompanhar histórico de sessões e avaliações
 - Gerenciar agenda de tutorias
+- Receber notificações sobre agendamentos, avaliações e alterações
 
 ### Funcionalidades da Plataforma
 
@@ -47,6 +49,9 @@ Tutor Connect é uma aplicação web projetada para facilitar a tutoria entre es
 - Geração de link do Google Meet para cada sessão
 - Gerenciamento de status das sessões em tempo real
 - Sistema de avaliação e comentários
+- Sistema de notificações para alunos e tutores
+- Exibição de estatísticas rápidas (quantidade de alunos e tutores)
+- Termos de Uso e Política de Privacidade exibidos no sistema
 
 ## Arquitetura
 
@@ -54,13 +59,17 @@ Tutor Connect é uma aplicação web projetada para facilitar a tutoria entre es
 tutor-connect/
 ├── backend/
 │   ├── models/
-│   │   ├── User.js
-│   │   ├── Sessao.js
-│   │   └── Avaliacao.js
+│   │   ├── Avaliacao.js
+│   │   ├── Notificacao.js
+│   │   ├── Sessao.js 
+│   │   └── User.js
 │   ├── routes/
 │   │   ├── auth.js
-│   │   ├── users.js
-│   │   └── sessoes.js
+│   │   ├── notificacoes.js 
+│   │   ├── sessoes.js
+│   │   └── users.js
+│   ├── helpers/
+│   │   └── notificacaoHelper.js
 │   ├── server.js
 │   ├── package.json
 │   └── .env.example
@@ -71,10 +80,13 @@ tutor-connect/
     ├── src/
     │   ├── components/
     │   │   ├── ui/
-    │   │   ├── Login.js
+    │   │   ├── Agendamento.js
+    │   │   ├── Avaliacao.js 
     │   │   ├── Dashboard.js
-    │   │   ├── ProfileSetup.js
-    │   │   └── Profile.js
+    │   │   ├── Login.js
+    │   │   ├── Notifications.js
+    │   │   ├── Profile.js
+    │   │   └── ProfileSetup.js
     │   ├── lib/
     │   │   └── utils.js
     │   ├── App.js
@@ -92,6 +104,7 @@ tutor-connect/
 - MongoDB com Mongoose
 - JSON Web Tokens (JWT)
 - Google APIs (OAuth2, Calendar)
+- Sistema de notificações (backend)
 
 **Frontend**
 
@@ -101,6 +114,8 @@ tutor-connect/
 - Biblioteca de componentes shadcn/ui
 - Axios
 - Lucide Icons
+- Sistema de notificações (frontend)
+- Modal de Termos de Uso e Política de Privacidade
 
 ## Pré-requisitos
 
@@ -207,6 +222,7 @@ PORT=5001
 | GET    | `/users/tutor/:id/disponibilidade` | Obtém disponibilidade do tutor      |
 | POST   | `/users/disponibilidade`           | Adiciona horário de disponibilidade |
 | DELETE | `/users/disponibilidade/:id`       | Remove horário de disponibilidade   |
+| GET    | `/users/contagem`                  | Retorna quantidade de alunos e tutores cadastrados |
 
 ### Sessões
 
@@ -220,6 +236,17 @@ PORT=5001
 | PUT    | `/sessoes/:id/cancelar`              | Cancela sessão                             |
 | POST   | `/sessoes/avaliar`                   | Envia avaliação da sessão                  |
 | GET    | `/sessoes/avaliacoes/tutor/:tutorId` | Lista avaliações e comentários de um tutor |
+
+### Notificações
+
+| Método | Endpoint                                 | Descrição                                 |
+| ------ | ---------------------------------------- | ------------------------------------------ |
+| GET    | `/notificacoes`                          | Lista notificações do usuário              |
+| GET    | `/notificacoes/count`                    | Retorna quantidade de notificações não lidas |
+| PUT    | `/notificacoes/:id/ler`                  | Marca notificação como lida                |
+| PUT    | `/notificacoes/ler-todas`                | Marca todas como lidas                     |
+| DELETE | `/notificacoes/:id`                      | Remove notificação                         |
+| DELETE | `/notificacoes`                          | Remove todas notificações lidas            |
 
 ### Exemplos de Requisição
 
@@ -270,6 +297,7 @@ Authorization: Bearer <token>
 4. **Agendamento**: Alunos selecionam horários disponíveis e solicitam sessões
 5. **Gerenciamento de Sessões**: Tutores confirmam sessões; ambas as partes entram via Google Meet
 6. **Avaliação**: Após conclusão, alunos podem avaliar e comentar sobre tutores
+7. **Notificações**: Alunos e tutores recebem notificações sobre sessões, avaliações e lembretes
 
 ### Fluxo de Status da Sessão
 

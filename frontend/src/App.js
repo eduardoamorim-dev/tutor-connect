@@ -14,6 +14,15 @@ import Dashboard from "./components/Dashboard";
 import ProfileSetup from "./components/ProfileSetup";
 import Profile from "./components/Profile";
 import Notifications from "./components/Notifications";
+import { Avatar, AvatarFallback } from "./components/ui/avatar";
+import {
+  LayoutDashboard,
+  User,
+  LogOut,
+  Menu,
+  X,
+  GraduationCap,
+} from "lucide-react";
 import "./index.css";
 
 const API_URL = "http://localhost:5001";
@@ -22,7 +31,6 @@ const API_URL = "http://localhost:5001";
 function ProtectedRoute({ token, children }) {
   const [needsOnboarding, setNeedsOnboarding] = useState(null);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
@@ -31,7 +39,6 @@ function ProtectedRoute({ token, children }) {
         const res = await axios.get(`${API_URL}/users/profile`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-
         setNeedsOnboarding(!res.data.profileCompleted);
       } catch (error) {
         console.error("Erro ao verificar perfil:", error);
@@ -48,8 +55,21 @@ function ProtectedRoute({ token, children }) {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-slate-50">
-        <div className="h-16 w-16 animate-spin rounded-full border-b-2 border-violet-700" />
+      <div className="flex justify-center items-center h-screen bg-gradient-to-br from-slate-50 to-violet-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-xl flex items-center justify-center animate-pulse">
+            <GraduationCap className="w-6 h-6 text-white" />
+          </div>
+          <div className="h-1 w-32 bg-gray-200 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-violet-600 to-indigo-600 rounded-full animate-[loading_1s_ease-in-out_infinite]"
+              style={{
+                width: "50%",
+                animation: "loading 1s ease-in-out infinite",
+              }}
+            />
+          </div>
+        </div>
       </div>
     );
   }
@@ -61,74 +81,189 @@ function ProtectedRoute({ token, children }) {
   return children;
 }
 
-// Componente de Navbar com Notificações
+// Componente de Navbar Profissional
 function Navbar({ user, token, onLogout }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  // Detectar scroll para adicionar sombra
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const isActive = (path) => location.pathname === path;
 
+  const getInitials = (name) => {
+    if (!name) return "U";
+    return name
+      .split(" ")
+      .map((w) => w[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const navItems = [
+    { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { path: "/profile", label: "Meu Perfil", icon: User },
+  ];
+
   return (
-    <nav className="bg-white shadow-sm border-b sticky top-0 z-40">
-      <div className="container mx-auto px-6">
-        <div className="flex justify-between items-center h-16">
-          <div className="flex items-center gap-8">
+    <>
+      <nav
+        className={`bg-white/80 backdrop-blur-lg border-b sticky top-0 z-40 transition-all duration-300 ${
+          scrolled ? "shadow-md border-transparent" : "border-gray-100"
+        }`}
+      >
+        <div className="container mx-auto px-4 sm:px-6">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo */}
             <button
               onClick={() => navigate("/dashboard")}
-              className="flex items-center gap-3"
+              className="flex items-center gap-3 group"
             >
-              <div className="w-9 h-9 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">TC</span>
+              <div className="w-10 h-10 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-md group-hover:shadow-violet-300 transition-all duration-300 group-hover:scale-105">
+                <GraduationCap className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900">
-                Tutor Connect
-              </span>
+              <div className="hidden sm:block">
+                <span className="text-xl font-bold bg-gradient-to-r from-violet-700 to-indigo-600 bg-clip-text text-transparent">
+                  Tutor Connect
+                </span>
+              </div>
             </button>
 
-            <div className="hidden md:flex items-center gap-1">
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-1 bg-gray-100/80 p-1 rounded-xl">
+              {navItems.map((item) => (
+                <button
+                  key={item.path}
+                  onClick={() => navigate(item.path)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    isActive(item.path)
+                      ? "bg-white text-violet-700 shadow-sm"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
+                  }`}
+                >
+                  <item.icon className="w-4 h-4" />
+                  {item.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Right Section */}
+            <div className="flex items-center gap-2 sm:gap-4">
+              {/* Notificações */}
+              <Notifications token={token} />
+
+              {/* User Menu - Desktop */}
+              <div className="hidden sm:flex items-center gap-3 pl-4 border-l border-gray-200">
+                <div className="text-right">
+                  <p className="text-sm font-semibold text-gray-900 leading-tight">
+                    {user?.nome?.split(" ")[0]}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {user?.isTutor ? "Tutor" : "Aluno"}
+                  </p>
+                </div>
+                <Avatar className="h-9 w-9 ring-2 ring-violet-100">
+                  <AvatarFallback className="bg-gradient-to-br from-violet-500 to-indigo-500 text-white text-sm font-medium">
+                    {getInitials(user?.nome)}
+                  </AvatarFallback>
+                </Avatar>
+                <button
+                  onClick={onLogout}
+                  className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200"
+                  title="Sair"
+                >
+                  <LogOut className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Mobile Menu Button */}
               <button
-                onClick={() => navigate("/dashboard")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive("/dashboard")
-                    ? "bg-violet-100 text-violet-700"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                Dashboard
-              </button>
-              <button
-                onClick={() => navigate("/profile")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  isActive("/profile")
-                    ? "bg-violet-100 text-violet-700"
-                    : "text-gray-600 hover:bg-gray-100"
-                }`}
-              >
-                Meu Perfil
+                {mobileMenuOpen ? (
+                  <X className="w-6 h-6" />
+                ) : (
+                  <Menu className="w-6 h-6" />
+                )}
               </button>
             </div>
           </div>
+        </div>
 
-          <div className="flex items-center gap-3">
-            {/* Componente de Notificações */}
-            <Notifications token={token} />
-            
-            <div className="hidden sm:block text-right">
-              <p className="text-sm font-medium text-gray-900">{user?.nome}</p>
-              <p className="text-xs text-gray-500">
-                {user?.isTutor ? "Tutor" : "Aluno"}
-              </p>
+        {/* Mobile Menu */}
+        <div
+          className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+            mobileMenuOpen ? "max-h-96 border-t" : "max-h-0"
+          }`}
+        >
+          <div className="container mx-auto px-4 py-4 space-y-2">
+            {/* User Info Mobile */}
+            <div className="flex items-center gap-3 p-3 bg-gradient-to-r from-violet-50 to-indigo-50 rounded-xl mb-4">
+              <Avatar className="h-12 w-12 ring-2 ring-violet-200">
+                <AvatarFallback className="bg-gradient-to-br from-violet-500 to-indigo-500 text-white font-medium">
+                  {getInitials(user?.nome)}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-semibold text-gray-900">{user?.nome}</p>
+                <p className="text-sm text-violet-600">
+                  {user?.isTutor ? "Tutor" : "Aluno"}
+                </p>
+              </div>
             </div>
+
+            {/* Nav Items Mobile */}
+            {navItems.map((item) => (
+              <button
+                key={item.path}
+                onClick={() => {
+                  navigate(item.path);
+                  setMobileMenuOpen(false);
+                }}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium transition-all duration-200 ${
+                  isActive(item.path)
+                    ? "bg-violet-100 text-violet-700"
+                    : "text-gray-600 hover:bg-gray-100"
+                }`}
+              >
+                <item.icon className="w-5 h-5" />
+                {item.label}
+              </button>
+            ))}
+
+            {/* Logout Mobile */}
             <button
-              onClick={onLogout}
-              className="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              onClick={() => {
+                onLogout();
+                setMobileMenuOpen(false);
+              }}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium text-red-600 hover:bg-red-50 transition-all duration-200 mt-4 border-t pt-4"
             >
-              Sair
+              <LogOut className="w-5 h-5" />
+              Sair da conta
             </button>
           </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+
+      {/* Overlay for mobile menu */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 md:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+    </>
   );
 }
 
@@ -192,8 +327,13 @@ function App() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-slate-50">
-        <div className="h-16 w-16 animate-spin rounded-full border-b-2 border-violet-700" />
+      <div className="flex justify-center items-center h-screen bg-gradient-to-br from-slate-50 to-violet-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-16 h-16 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-xl shadow-violet-200 animate-bounce">
+            <GraduationCap className="w-8 h-8 text-white" />
+          </div>
+          <p className="text-gray-500 font-medium">Carregando...</p>
+        </div>
       </div>
     );
   }
@@ -202,9 +342,19 @@ function App() {
 
   return (
     <Router>
-      <Toaster position="top-right" richColors />
-      <div className="min-h-screen bg-gray-50">
-        {showNavbar && <Navbar user={user} token={token} onLogout={handleLogout} />}
+      <Toaster
+        position="top-right"
+        richColors
+        toastOptions={{
+          style: {
+            borderRadius: "12px",
+          },
+        }}
+      />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-violet-50/30">
+        {showNavbar && (
+          <Navbar user={user} token={token} onLogout={handleLogout} />
+        )}
 
         <Routes>
           <Route

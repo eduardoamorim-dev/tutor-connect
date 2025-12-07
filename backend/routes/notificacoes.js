@@ -80,7 +80,7 @@ router.put("/ler-todas", authMiddleware, async (req, res) => {
   try {
     await Notificacao.updateMany(
       { usuario: req.userId, lida: false },
-      { lida: true }
+      { lida: true },
     );
 
     res.json({ message: "Todas as notificações marcadas como lidas" });

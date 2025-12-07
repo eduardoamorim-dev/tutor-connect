@@ -1,19 +1,19 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { 
-  Bell, 
-  Check, 
-  CheckCheck, 
-  Trash2, 
-  Calendar, 
-  Star, 
-  XCircle, 
+import {
+  Bell,
+  Check,
+  CheckCheck,
+  Trash2,
+  Calendar,
+  Star,
+  XCircle,
   CheckCircle,
   Clock,
-  Loader2
+  Loader2,
+  ExternalLink,
 } from "lucide-react";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
 
 const API_URL = "http://localhost:5001";
 
@@ -25,7 +25,9 @@ const getNotificationIcon = (tipo) => {
     sessao_cancelada: <XCircle className="w-4 h-4 text-red-500" />,
     sessao_concluida: <Check className="w-4 h-4 text-violet-500" />,
     avaliacao_pendente: <Star className="w-4 h-4 text-yellow-500" />,
-    avaliacao_recebida: <Star className="w-4 h-4 text-yellow-500 fill-yellow-400" />,
+    avaliacao_recebida: (
+      <Star className="w-4 h-4 text-yellow-500 fill-yellow-400" />
+    ),
     lembrete_sessao: <Clock className="w-4 h-4 text-orange-500" />,
   };
   return icons[tipo] || <Bell className="w-4 h-4 text-gray-500" />;
@@ -33,18 +35,32 @@ const getNotificationIcon = (tipo) => {
 
 // Cores de fundo por tipo
 const getNotificationBg = (tipo, lida) => {
-  if (lida) return "bg-gray-50";
-  
+  if (lida) return "bg-gray-50 hover:bg-gray-100";
+
   const colors = {
-    sessao_agendada: "bg-blue-50",
-    sessao_confirmada: "bg-green-50",
-    sessao_cancelada: "bg-red-50",
-    sessao_concluida: "bg-violet-50",
-    avaliacao_pendente: "bg-yellow-50",
-    avaliacao_recebida: "bg-yellow-50",
-    lembrete_sessao: "bg-orange-50",
+    sessao_agendada: "bg-blue-50 hover:bg-blue-100",
+    sessao_confirmada: "bg-green-50 hover:bg-green-100",
+    sessao_cancelada: "bg-red-50 hover:bg-red-100",
+    sessao_concluida: "bg-violet-50 hover:bg-violet-100",
+    avaliacao_pendente: "bg-yellow-50 hover:bg-yellow-100",
+    avaliacao_recebida: "bg-yellow-50 hover:bg-yellow-100",
+    lembrete_sessao: "bg-orange-50 hover:bg-orange-100",
   };
-  return colors[tipo] || "bg-gray-50";
+  return colors[tipo] || "bg-gray-50 hover:bg-gray-100";
+};
+
+// Texto da ação por tipo
+const getActionText = (tipo) => {
+  const actions = {
+    sessao_agendada: "Ver sessão",
+    sessao_confirmada: "Ver sessão",
+    sessao_cancelada: "Ver detalhes",
+    sessao_concluida: "Ver sessão",
+    avaliacao_pendente: "Avaliar agora",
+    avaliacao_recebida: "Ver avaliação",
+    lembrete_sessao: "Ver sessão",
+  };
+  return actions[tipo] || "Ver mais";
 };
 
 function formatTimeAgo(date) {
@@ -58,7 +74,20 @@ function formatTimeAgo(date) {
   if (minutes < 60) return `${minutes}min`;
   if (hours < 24) return `${hours}h`;
   if (days < 7) return `${days}d`;
-  return new Date(date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+  return new Date(date).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "short",
+  });
+}
+
+function formatDateTime(date) {
+  return new Date(date).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 function Notifications({ token }) {
@@ -67,6 +96,7 @@ function Notifications({ token }) {
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const dropdownRef = useRef(null);
+  const navigate = useNavigate();
 
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -84,7 +114,9 @@ function Notifications({ token }) {
   const fetchNotificacoes = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_URL}/notificacoes?limit=20`, { headers });
+      const res = await axios.get(`${API_URL}/notificacoes?limit=20`, {
+        headers,
+      });
       setNotificacoes(res.data);
     } catch (error) {
       console.error("Erro ao buscar notificações:", error);
@@ -97,10 +129,10 @@ function Notifications({ token }) {
   const marcarComoLida = async (id) => {
     try {
       await axios.put(`${API_URL}/notificacoes/${id}/ler`, {}, { headers });
-      setNotificacoes(prev => 
-        prev.map(n => n._id === id ? { ...n, lida: true } : n)
+      setNotificacoes((prev) =>
+        prev.map((n) => (n._id === id ? { ...n, lida: true } : n)),
       );
-      setCount(prev => Math.max(0, prev - 1));
+      setCount((prev) => Math.max(0, prev - 1));
     } catch (error) {
       console.error("Erro ao marcar como lida:", error);
     }
@@ -110,7 +142,7 @@ function Notifications({ token }) {
   const marcarTodasComoLidas = async () => {
     try {
       await axios.put(`${API_URL}/notificacoes/ler-todas`, {}, { headers });
-      setNotificacoes(prev => prev.map(n => ({ ...n, lida: true })));
+      setNotificacoes((prev) => prev.map((n) => ({ ...n, lida: true })));
       setCount(0);
     } catch (error) {
       console.error("Erro ao marcar todas como lidas:", error);
@@ -122,10 +154,10 @@ function Notifications({ token }) {
     e.stopPropagation();
     try {
       await axios.delete(`${API_URL}/notificacoes/${id}`, { headers });
-      const notificacao = notificacoes.find(n => n._id === id);
-      setNotificacoes(prev => prev.filter(n => n._id !== id));
+      const notificacao = notificacoes.find((n) => n._id === id);
+      setNotificacoes((prev) => prev.filter((n) => n._id !== id));
       if (!notificacao?.lida) {
-        setCount(prev => Math.max(0, prev - 1));
+        setCount((prev) => Math.max(0, prev - 1));
       }
     } catch (error) {
       console.error("Erro ao deletar notificação:", error);
@@ -136,9 +168,41 @@ function Notifications({ token }) {
   const limparLidas = async () => {
     try {
       await axios.delete(`${API_URL}/notificacoes`, { headers });
-      setNotificacoes(prev => prev.filter(n => !n.lida));
+      setNotificacoes((prev) => prev.filter((n) => !n.lida));
     } catch (error) {
       console.error("Erro ao limpar lidas:", error);
+    }
+  };
+
+  // Navegar para a ação da notificação
+  const handleNotificationClick = async (notificacao) => {
+    // Marcar como lida se ainda não foi
+    if (!notificacao.lida) {
+      await marcarComoLida(notificacao._id);
+    }
+
+    // Fechar dropdown
+    setIsOpen(false);
+
+    // Navegar baseado no tipo
+    switch (notificacao.tipo) {
+      case "sessao_agendada":
+      case "sessao_confirmada":
+      case "sessao_cancelada":
+      case "sessao_concluida":
+      case "avaliacao_pendente":
+      case "lembrete_sessao":
+        // Navegar para dashboard na aba de sessões
+        navigate("/dashboard?tab=sessoes");
+        break;
+
+      case "avaliacao_recebida":
+        // Navegar para o perfil
+        navigate("/profile");
+        break;
+
+      default:
+        navigate("/dashboard");
     }
   };
 
@@ -177,7 +241,7 @@ function Notifications({ token }) {
       >
         <Bell className="w-5 h-5 text-gray-600" />
         {count > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center text-[10px] font-bold text-white bg-red-500 rounded-full px-1">
+          <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] flex items-center justify-center text-[10px] font-bold text-white bg-red-500 rounded-full px-1 animate-pulse">
             {count > 99 ? "99+" : count}
           </span>
         )}
@@ -213,33 +277,43 @@ function Notifications({ token }) {
                 {notificacoes.map((notificacao) => (
                   <div
                     key={notificacao._id}
-                    onClick={() => !notificacao.lida && marcarComoLida(notificacao._id)}
-                    className={`px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors ${getNotificationBg(notificacao.tipo, notificacao.lida)}`}
+                    onClick={() => handleNotificationClick(notificacao)}
+                    className={`px-4 py-3 cursor-pointer transition-colors ${getNotificationBg(notificacao.tipo, notificacao.lida)}`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="mt-0.5">
+                      <div className="mt-0.5 flex-shrink-0">
                         {getNotificationIcon(notificacao.tipo)}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
-                          <p className={`text-sm ${notificacao.lida ? "text-gray-600" : "text-gray-900 font-medium"}`}>
+                          <p
+                            className={`text-sm ${notificacao.lida ? "text-gray-600" : "text-gray-900 font-medium"}`}
+                          >
                             {notificacao.titulo}
                           </p>
                           <div className="flex items-center gap-1 flex-shrink-0">
                             <span className="text-xs text-gray-400">
                               {formatTimeAgo(notificacao.data_criacao)}
                             </span>
-                            <button
-                              onClick={(e) => deletarNotificacao(notificacao._id, e)}
-                              className="p-1 hover:bg-gray-200 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <Trash2 className="w-3 h-3 text-gray-400 hover:text-red-500" />
-                            </button>
                           </div>
                         </div>
-                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">
+                        <p className="text-xs text-gray-500 mt-1">
                           {notificacao.mensagem}
                         </p>
+                        <div className="flex items-center justify-between mt-2">
+                          <span className="text-xs text-violet-600 font-medium flex items-center gap-1">
+                            {getActionText(notificacao.tipo)}
+                            <ExternalLink className="w-3 h-3" />
+                          </span>
+                          <button
+                            onClick={(e) =>
+                              deletarNotificacao(notificacao._id, e)
+                            }
+                            className="p-1 hover:bg-gray-200 rounded transition-colors"
+                          >
+                            <Trash2 className="w-3 h-3 text-gray-400 hover:text-red-500" />
+                          </button>
+                        </div>
                       </div>
                       {!notificacao.lida && (
                         <div className="w-2 h-2 bg-violet-500 rounded-full flex-shrink-0 mt-1.5" />
@@ -258,7 +332,7 @@ function Notifications({ token }) {
           </div>
 
           {/* Footer */}
-          {notificacoes.some(n => n.lida) && (
+          {notificacoes.some((n) => n.lida) && (
             <div className="px-4 py-2 border-t bg-gray-50">
               <button
                 onClick={limparLidas}

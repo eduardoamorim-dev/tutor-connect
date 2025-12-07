@@ -9,13 +9,13 @@ const notificacaoSchema = new mongoose.Schema({
   tipo: {
     type: String,
     enum: [
-      "sessao_agendada",      // Tutor recebe quando aluno agenda
-      "sessao_confirmada",    // Aluno recebe quando tutor confirma
-      "sessao_cancelada",     // Ambos recebem quando sessão é cancelada
-      "sessao_concluida",     // Ambos recebem quando sessão é concluída
-      "avaliacao_pendente",   // Aluno recebe lembrete para avaliar
-      "avaliacao_recebida",   // Tutor recebe quando é avaliado
-      "lembrete_sessao",      // Lembrete de sessão próxima
+      "sessao_agendada", // Tutor recebe quando aluno agenda
+      "sessao_confirmada", // Aluno recebe quando tutor confirma
+      "sessao_cancelada", // Ambos recebem quando sessão é cancelada
+      "sessao_concluida", // Ambos recebem quando sessão é concluída
+      "avaliacao_pendente", // Aluno recebe lembrete para avaliar
+      "avaliacao_recebida", // Tutor recebe quando é avaliado
+      "lembrete_sessao", // Lembrete de sessão próxima
     ],
     required: true,
   },
