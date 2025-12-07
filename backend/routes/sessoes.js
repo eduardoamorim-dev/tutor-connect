@@ -4,6 +4,14 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const Sessao = require("../models/Sessao");
 const Avaliacao = require("../models/Avaliacao");
+const {
+  notificarSessaoAgendada,
+  notificarSessaoConfirmada,
+  notificarSessaoCancelada,
+  notificarSessaoConcluida,
+  notificarAvaliacaoPendente,
+  notificarAvaliacaoRecebida,
+} = require("../helpers/notificacaoHelper");
 const router = express.Router();
 
 require("dotenv").config();
@@ -197,6 +205,9 @@ router.post("/create", authMiddleware, async (req, res) => {
       $inc: { total_sessoes: 1 },
     });
 
+    // Notificar tutor sobre nova sessão agendada
+    await notificarSessaoAgendada(sessao, user.nome);
+
     // Populate para retornar dados completos
     const sessaoPopulada = await Sessao.findById(sessao._id)
       .populate("tutor", "nome email")
@@ -292,6 +303,10 @@ router.put("/:id/confirmar", authMiddleware, async (req, res) => {
     sessao.status = "Confirmada";
     await sessao.save();
 
+    // Notificar aluno sobre confirmação
+    const tutor = await User.findById(sessao.tutor);
+    await notificarSessaoConfirmada(sessao, tutor.nome);
+
     const sessaoPopulada = await Sessao.findById(sessao._id)
       .populate("tutor", "nome email")
       .populate("aluno", "nome email");
@@ -327,6 +342,16 @@ router.put("/:id/concluir", authMiddleware, async (req, res) => {
 
     sessao.status = "Concluída";
     await sessao.save();
+
+    // Notificar ambos sobre conclusão
+    const tutor = await User.findById(sessao.tutor);
+    const aluno = await User.findById(sessao.aluno);
+    
+    await notificarSessaoConcluida(sessao, sessao.tutor, aluno.nome);
+    await notificarSessaoConcluida(sessao, sessao.aluno, tutor.nome);
+    
+    // Notificar aluno para avaliar
+    await notificarAvaliacaoPendente(sessao, tutor.nome);
 
     const sessaoPopulada = await Sessao.findById(sessao._id)
       .populate("tutor", "nome email")
@@ -394,6 +419,14 @@ router.put("/:id/cancelar", authMiddleware, async (req, res) => {
         );
       }
     }
+
+    // Notificar a outra parte sobre o cancelamento
+    const quemCancelou = await User.findById(req.userId);
+    const destinatario = sessao.tutor.toString() === req.userId 
+      ? sessao.aluno 
+      : sessao.tutor;
+    
+    await notificarSessaoCancelada(sessao, req.userId, quemCancelou.nome, destinatario);
 
     const sessaoPopulada = await Sessao.findById(sessao._id)
       .populate("tutor", "nome email")
@@ -467,6 +500,10 @@ router.post("/avaliar", authMiddleware, async (req, res) => {
     tutor.total_avaliacoes = todasAvaliacoes.length;
     tutor.avaliacoes_recebidas.push(avaliacao._id);
     await tutor.save();
+
+    // Notificar tutor sobre nova avaliação
+    const aluno = await User.findById(req.userId);
+    await notificarAvaliacaoRecebida(avaliacao, sessao, aluno.nome);
 
     res.json({ message: "Avaliação enviada com sucesso", avaliacao });
   } catch (error) {

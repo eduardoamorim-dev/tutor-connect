@@ -13,6 +13,7 @@ import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
 import ProfileSetup from "./components/ProfileSetup";
 import Profile from "./components/Profile";
+import Notifications from "./components/Notifications";
 import "./index.css";
 
 const API_URL = "http://localhost:5001";
@@ -60,8 +61,8 @@ function ProtectedRoute({ token, children }) {
   return children;
 }
 
-// Componente de Navbar
-function Navbar({ user, onLogout }) {
+// Componente de Navbar com Notificações
+function Navbar({ user, token, onLogout }) {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -108,7 +109,10 @@ function Navbar({ user, onLogout }) {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            {/* Componente de Notificações */}
+            <Notifications token={token} />
+            
             <div className="hidden sm:block text-right">
               <p className="text-sm font-medium text-gray-900">{user?.nome}</p>
               <p className="text-xs text-gray-500">
@@ -200,7 +204,7 @@ function App() {
     <Router>
       <Toaster position="top-right" richColors />
       <div className="min-h-screen bg-gray-50">
-        {showNavbar && <Navbar user={user} onLogout={handleLogout} />}
+        {showNavbar && <Navbar user={user} token={token} onLogout={handleLogout} />}
 
         <Routes>
           <Route

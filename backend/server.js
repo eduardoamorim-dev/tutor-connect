@@ -6,6 +6,7 @@ require("dotenv").config();
 const authRoutes = require("./routes/auth");
 const sessaoRoutes = require("./routes/sessoes");
 const userRoutes = require("./routes/users");
+const notificacaoRoutes = require("./routes/notificacoes");
 
 const app = express();
 
@@ -34,6 +35,7 @@ mongoose
 app.use("/auth", authRoutes);
 app.use("/sessoes", sessaoRoutes);
 app.use("/users", userRoutes);
+app.use("/notificacoes", notificacaoRoutes);
 
 // Rota de teste
 app.get("/", (req, res) => {
@@ -49,5 +51,5 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
-  console.log(`📍 URL: http://localhost:${PORT}`);
+  console.log(`🔔 URL: http://localhost:${PORT}`);
 });
