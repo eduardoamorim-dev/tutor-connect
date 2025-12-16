@@ -82,6 +82,39 @@ const notificarSessaoCancelada = async (
   );
 };
 
+// Notificação: Cancelamento automático pelo sistema
+const notificarCancelamentoAutomatico = async (
+  sessao,
+  destinatario,
+  tipoUsuario,
+  nomeOutro,
+) => {
+  const dataFormatada = new Date(sessao.data_hora_inicio).toLocaleDateString(
+    "pt-BR",
+    {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    },
+  );
+
+  let mensagem;
+  if (tipoUsuario === "tutor") {
+    mensagem = `Sua sessão de ${sessao.disciplina} com ${nomeOutro} para ${dataFormatada} foi cancelada automaticamente por falta de confirmação`;
+  } else {
+    mensagem = `Sua sessão de ${sessao.disciplina} com ${nomeOutro} para ${dataFormatada} foi cancelada automaticamente pois o tutor não confirmou a tempo`;
+  }
+
+  return criarNotificacao(
+    destinatario,
+    "sessao_cancelada",
+    "Sessão cancelada automaticamente",
+    mensagem,
+    sessao._id,
+  );
+};
+
 // Notificação: Sessão concluída
 const notificarSessaoConcluida = async (sessao, destinatario, nomeOutro) => {
   return criarNotificacao(
@@ -121,6 +154,7 @@ module.exports = {
   notificarSessaoAgendada,
   notificarSessaoConfirmada,
   notificarSessaoCancelada,
+  notificarCancelamentoAutomatico,
   notificarSessaoConcluida,
   notificarAvaliacaoPendente,
   notificarAvaliacaoRecebida,
