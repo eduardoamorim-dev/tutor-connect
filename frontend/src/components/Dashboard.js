@@ -45,18 +45,20 @@ function Dashboard({ token, user }) {
   const [activeTab, setActiveTab] = useState("tutores");
   const [searchParams] = useSearchParams();
 
-  // Verificar se deve abrir na aba de sessões (vindo de notificação)
   useEffect(() => {
     const tab = searchParams.get("tab");
     if (tab === "sessoes") {
       setActiveTab("sessoes");
     }
   }, [searchParams]);
+
   const [tutores, setTutores] = useState([]);
   const [sessoes, setSessoes] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedDisciplina, setSelectedDisciplina] = useState("all");
+  const [filtroStatusSessao, setFiltroStatusSessao] = useState("ativas");
+  const [isChangingFilter, setIsChangingFilter] = useState(false);
 
   const [showAgendamento, setShowAgendamento] = useState(false);
   const [tutorSelecionado, setTutorSelecionado] = useState(null);
@@ -82,7 +84,6 @@ function Dashboard({ token, user }) {
   const [motivoCancelamento, setMotivoCancelamento] = useState("");
   const [cancelamentoLoading, setCancelamentoLoading] = useState(false);
 
-  // Novo estado para modal de detalhes do tutor
   const [showDetalhesTutor, setShowDetalhesTutor] = useState(false);
   const [tutorDetalhes, setTutorDetalhes] = useState(null);
   const [avaliacoesTutor, setAvaliacoesTutor] = useState([]);
@@ -110,6 +111,17 @@ function Dashboard({ token, user }) {
     }
   };
 
+  const handleFilterChange = (newFilter) => {
+    if (newFilter === filtroStatusSessao) return;
+    
+    setIsChangingFilter(true);
+    
+    setTimeout(() => {
+      setFiltroStatusSessao(newFilter);
+      setTimeout(() => setIsChangingFilter(false), 50);
+    }, 150);
+  };
+
   const getInitials = (name) =>
     name
       .split(" ")
@@ -117,12 +129,14 @@ function Dashboard({ token, user }) {
       .join("")
       .toUpperCase()
       .slice(0, 2);
+
   const formatDate = (date) =>
     new Date(date).toLocaleDateString("pt-BR", {
       day: "2-digit",
       month: "short",
       year: "numeric",
     });
+
   const formatDateFull = (date) => {
     const dateStr =
       typeof date === "string" && date.match(/^\d{4}-\d{2}-\d{2}$/)
@@ -141,7 +155,6 @@ function Dashboard({ token, user }) {
       minute: "2-digit",
     });
 
-  // Função para abrir modal de detalhes do tutor
   const abrirDetalhesTutor = async (tutor) => {
     setTutorDetalhes(tutor);
     setShowDetalhesTutor(true);
@@ -238,16 +251,19 @@ function Dashboard({ token, user }) {
     toast.success("Confirmada!");
     fetchData();
   };
+
   const concluirSessao = async (id) => {
     await axios.put(`${API_URL}/sessoes/${id}/concluir`, {}, { headers });
     toast.success("Concluída!");
     fetchData();
   };
+
   const abrirCancelamento = (s) => {
     setSessaoParaCancelar(s);
     setMotivoCancelamento("");
     setShowCancelamento(true);
   };
+
   const handleCancelar = async () => {
     setCancelamentoLoading(true);
     await axios.put(
@@ -260,11 +276,13 @@ function Dashboard({ token, user }) {
     fetchData();
     setCancelamentoLoading(false);
   };
+
   const abrirAvaliacao = (s) => {
     setSessaoParaAvaliar(s);
     setAvaliacaoForm({ nota: 5, comentario: "" });
     setShowAvaliacao(true);
   };
+
   const handleAvaliar = async () => {
     setAvaliacaoLoading(true);
     await axios.post(
@@ -287,6 +305,7 @@ function Dashboard({ token, user }) {
       tutores.flatMap((t) => t.disciplinas_dominadas.map((d) => d.disciplina)),
     ),
   ].sort();
+
   const filteredTutores = tutores.filter((t) => {
     const matchSearch =
       t.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -315,7 +334,6 @@ function Dashboard({ token, user }) {
     const month = String(date.getUTCMonth() + 1).padStart(2, "0");
     const day = String(date.getUTCDate()).padStart(2, "0");
 
-    // Verificar se o horário já passou
     const [horaFim, minFim] = d.horario_fim.split(":").map(Number);
     const dataHoraFim = new Date(
       year,
@@ -327,7 +345,6 @@ function Dashboard({ token, user }) {
       0,
     );
 
-    // Só adiciona se ainda não passou
     if (dataHoraFim > agora) {
       const k = `${year}-${month}-${day}`;
       if (!acc[k]) acc[k] = [];
@@ -338,6 +355,15 @@ function Dashboard({ token, user }) {
   }, {});
 
   const datasDisponiveis = Object.keys(disponibilidadesPorData).sort();
+
+  const sessoesFiltradas = sessoes.filter((sessao) => {
+    if (filtroStatusSessao === "ativas") {
+      return sessao.status === "Pendente" || sessao.status === "Confirmada";
+    } else if (filtroStatusSessao === "finalizadas") {
+      return sessao.status === "Concluída" || sessao.status === "Cancelada";
+    }
+    return true;
+  });
 
   if (loading)
     return (
@@ -352,37 +378,37 @@ function Dashboard({ token, user }) {
         <div className="flex gap-4 mb-8 border-b">
           <button
             onClick={() => setActiveTab("tutores")}
-            className={`pb-4 px-2 font-medium relative ${activeTab === "tutores" ? "text-violet-600" : "text-gray-500"}`}
+            className={`pb-4 px-2 font-medium relative transition-all duration-300 ${activeTab === "tutores" ? "text-violet-600" : "text-gray-500 hover:text-gray-700"}`}
           >
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4" />
               Buscar Tutores
             </div>
             {activeTab === "tutores" && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-violet-600" />
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-violet-600 animate-in slide-in-from-left duration-300" />
             )}
           </button>
           <button
             onClick={() => setActiveTab("sessoes")}
-            className={`pb-4 px-2 font-medium relative ${activeTab === "sessoes" ? "text-violet-600" : "text-gray-500"}`}
+            className={`pb-4 px-2 font-medium relative transition-all duration-300 ${activeTab === "sessoes" ? "text-violet-600" : "text-gray-500 hover:text-gray-700"}`}
           >
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               Minhas Sessões
               {sessoes.length > 0 && (
-                <Badge className="bg-violet-100 text-violet-700">
+                <Badge className="bg-violet-100 text-violet-700 transition-all duration-300">
                   {sessoes.length}
                 </Badge>
               )}
             </div>
             {activeTab === "sessoes" && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-violet-600" />
+              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-violet-600 animate-in slide-in-from-left duration-300" />
             )}
           </button>
         </div>
 
         {activeTab === "tutores" && (
-          <div>
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="mb-6 flex flex-col md:flex-row gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -390,14 +416,14 @@ function Dashboard({ token, user }) {
                   placeholder="Buscar..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 transition-all duration-300 focus:ring-2 focus:ring-violet-500"
                 />
               </div>
               <Select
                 value={selectedDisciplina}
                 onValueChange={setSelectedDisciplina}
               >
-                <SelectTrigger className="w-full md:w-64">
+                <SelectTrigger className="w-full md:w-64 transition-all duration-300">
                   <SelectValue placeholder="Todas" />
                 </SelectTrigger>
                 <SelectContent>
@@ -412,10 +438,11 @@ function Dashboard({ token, user }) {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredTutores.length > 0 ? (
-                filteredTutores.map((tutor) => (
+                filteredTutores.map((tutor, index) => (
                   <Card
                     key={tutor._id}
-                    className="hover:shadow-lg transition-shadow"
+                    className="hover:shadow-sm transition-all duration-300 animate-in fade-in slide-in-from-bottom-4"
+                    style={{ animationDelay: `${index * 50}ms` }}
                   >
                     <CardContent className="pt-6">
                       <div className="flex flex-col items-center space-y-4">
@@ -507,9 +534,10 @@ function Dashboard({ token, user }) {
                   </Card>
                 ))
               ) : (
-                <div className="col-span-full text-center py-16 text-gray-500">
+                <div className="col-span-full text-center py-16 text-gray-500 animate-in fade-in slide-in-from-bottom-4 duration-500">
                   <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                   <p className="text-lg font-medium">Nenhum tutor encontrado</p>
+                  <p className="text-sm mt-2">Tente ajustar os filtros de busca</p>
                 </div>
               )}
             </div>
@@ -517,15 +545,92 @@ function Dashboard({ token, user }) {
         )}
 
         {activeTab === "sessoes" && (
-          <div>
-            {sessoes.length > 0 ? (
-              <div className="grid gap-4">
-                {sessoes.map((sessao) => {
+          <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Filtro com tabs estilo iOS */}
+            <div className="mb-6">
+              <div className="inline-flex items-center gap-1 bg-gray-100 rounded-xl p-1 shadow-sm">
+                <button
+                  onClick={() => handleFilterChange("ativas")}
+                  className={`relative px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 ${
+                    filtroStatusSessao === "ativas"
+                      ? "bg-white text-gray-900 shadow-md"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
+                  }`}
+                >
+                  <span className="relative z-10">Ativas</span>
+                  {sessoes.filter(s => s.status === "Pendente" || s.status === "Confirmada").length > 0 && (
+                    <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-semibold transition-all duration-300 ${
+                      filtroStatusSessao === "ativas" 
+                        ? "bg-violet-100 text-violet-700" 
+                        : "bg-gray-200 text-gray-600"
+                    }`}>
+                      {sessoes.filter(s => s.status === "Pendente" || s.status === "Confirmada").length}
+                    </span>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => handleFilterChange("finalizadas")}
+                  className={`relative px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 ${
+                    filtroStatusSessao === "finalizadas"
+                      ? "bg-white text-gray-900 shadow-md"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
+                  }`}
+                >
+                  <span className="relative z-10">Finalizadas</span>
+                  {sessoes.filter(s => s.status === "Concluída" || s.status === "Cancelada").length > 0 && (
+                    <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-semibold transition-all duration-300 ${
+                      filtroStatusSessao === "finalizadas" 
+                        ? "bg-violet-100 text-violet-700" 
+                        : "bg-gray-200 text-gray-600"
+                    }`}>
+                      {sessoes.filter(s => s.status === "Concluída" || s.status === "Cancelada").length}
+                    </span>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => handleFilterChange("todas")}
+                  className={`relative px-5 py-2.5 rounded-lg text-sm font-medium transition-all duration-300 ${
+                    filtroStatusSessao === "todas"
+                      ? "bg-white text-gray-900 shadow-md"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
+                  }`}
+                >
+                  <span className="relative z-10">Todas</span>
+                  {sessoes.length > 0 && (
+                    <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-semibold transition-all duration-300 ${
+                      filtroStatusSessao === "todas" 
+                        ? "bg-violet-100 text-violet-700" 
+                        : "bg-gray-200 text-gray-600"
+                    }`}>
+                      {sessoes.length}
+                    </span>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Container com transição suave */}
+            <div 
+              className="relative transition-all duration-300"
+              style={{ 
+                minHeight: '500px',
+                opacity: isChangingFilter ? 0.6 : 1 
+              }}
+            >
+              {sessoesFiltradas.length > 0 ? (
+                <div className="grid gap-4">
+                  {sessoesFiltradas.map((sessao, index) => {
                   const isTutor = sessao.tutor._id === user?._id;
                   const outra = isTutor ? sessao.aluno : sessao.tutor;
                   const isPast = new Date(sessao.data_hora_fim) < new Date();
                   return (
-                    <Card key={sessao._id}>
+                    <Card 
+                      key={sessao._id}
+                      className="hover:shadow-md transition-all duration-300 animate-in fade-in slide-in-from-bottom-4"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
                       <CardContent className="p-6">
                         <div className="flex items-start gap-4">
                           <Avatar className="h-12 w-12">
@@ -628,25 +733,43 @@ function Dashboard({ token, user }) {
                 })}
               </div>
             ) : (
-              <Card>
+              <Card className="animate-in fade-in zoom-in duration-500">
                 <CardContent className="flex flex-col items-center py-16 text-gray-500">
-                  <Calendar className="w-16 h-16 mb-4 text-gray-300" />
-                  <p className="text-lg font-medium mb-2">Nenhuma sessão</p>
-                  <Button
-                    onClick={() => setActiveTab("tutores")}
-                    className="bg-violet-600"
-                  >
-                    <Search className="w-4 h-4 mr-2" />
-                    Buscar Tutores
-                  </Button>
+                  <Calendar className="w-16 h-16 mb-4 text-gray-300 animate-in zoom-in duration-500" />
+                  <p className="text-lg font-medium mb-2">
+                    {filtroStatusSessao === "ativas" 
+                      ? "Nenhuma sessão ativa" 
+                      : filtroStatusSessao === "finalizadas"
+                      ? "Nenhuma sessão finalizada"
+                      : "Nenhuma sessão"}
+                  </p>
+                  {filtroStatusSessao !== "todas" && sessoes.length > 0 && (
+                    <Button
+                      onClick={() => handleFilterChange("todas")}
+                      variant="outline"
+                      className="mt-4"
+                    >
+                      Ver todas as sessões
+                    </Button>
+                  )}
+                  {sessoes.length === 0 && (
+                    <Button
+                      onClick={() => setActiveTab("tutores")}
+                      className="mt-4 bg-violet-600"
+                    >
+                      <Search className="w-4 h-4 mr-2" />
+                      Buscar Tutores
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             )}
+            </div>
           </div>
         )}
       </div>
 
-      {/* Modal de Detalhes do Tutor com Avaliações */}
+      {/* Modal de Detalhes do Tutor */}
       <Dialog open={showDetalhesTutor} onOpenChange={setShowDetalhesTutor}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -655,7 +778,6 @@ function Dashboard({ token, user }) {
 
           {tutorDetalhes && (
             <div className="space-y-6">
-              {/* Informações do Tutor */}
               <div className="flex items-start gap-4 p-4 bg-violet-50 rounded-lg">
                 <Avatar className="h-16 w-16">
                   <AvatarFallback className="bg-violet-200 text-violet-700 text-xl">
@@ -691,7 +813,6 @@ function Dashboard({ token, user }) {
                 </div>
               </div>
 
-              {/* Bio */}
               {tutorDetalhes.bio && (
                 <div>
                   <h4 className="font-medium text-gray-900 mb-2">Sobre</h4>
@@ -699,7 +820,6 @@ function Dashboard({ token, user }) {
                 </div>
               )}
 
-              {/* Disciplinas */}
               <div>
                 <h4 className="font-medium text-gray-900 mb-2">
                   Disciplinas que ensina
@@ -713,7 +833,6 @@ function Dashboard({ token, user }) {
                 </div>
               </div>
 
-              {/* Avaliações e Comentários */}
               <div>
                 <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
                   <MessageSquare className="w-4 h-4" />
@@ -781,7 +900,10 @@ function Dashboard({ token, user }) {
           )}
 
           <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={fecharDetalhesTutor}>
+            <Button 
+              variant="outline" 
+              onClick={fecharDetalhesTutor}
+            >
               Fechar
             </Button>
             {tutorDetalhes?.disponibilidade?.length > 0 && (
@@ -908,7 +1030,10 @@ function Dashboard({ token, user }) {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={fecharModalAgendamento}>
+            <Button 
+              variant="outline" 
+              onClick={fecharModalAgendamento}
+            >
               Cancelar
             </Button>
             <Button
@@ -971,7 +1096,10 @@ function Dashboard({ token, user }) {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAvaliacao(false)}>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowAvaliacao(false)}
+            >
               Cancelar
             </Button>
             <Button

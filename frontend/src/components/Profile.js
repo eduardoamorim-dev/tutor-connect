@@ -421,7 +421,7 @@ function Profile({ token, user, onUpdate }) {
               onChange={(e) =>
                 setFormData({ ...formData, isTutor: e.target.checked })
               }
-              className="w-5 h-5 text-violet-600 rounded"
+              className="w-5 h-5 accent-violet-600 rounded"
             />
             <div>
               <Label htmlFor="isTutor" className="font-medium cursor-pointer">
