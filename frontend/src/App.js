@@ -25,6 +25,7 @@ import {
   X,
   GraduationCap,
 } from "lucide-react";
+import ErrorBoundary from "./components/ErrorBoundary";
 import "./index.css";
 
 // Componente wrapper para verificar se precisa de onboarding
@@ -330,22 +331,24 @@ function AppRoutes() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router>
-          <Toaster
-            position="top-right"
-            richColors
-            toastOptions={{
-              style: {
-                borderRadius: "12px",
-              },
-            }}
-          />
-          <AppRoutes />
-        </Router>
-      </AuthProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <Router>
+            <Toaster
+              position="top-right"
+              richColors
+              toastOptions={{
+                style: {
+                  borderRadius: "12px",
+                },
+              }}
+            />
+            <AppRoutes />
+          </Router>
+        </AuthProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
