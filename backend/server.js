@@ -1,21 +1,30 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const helmet = require("helmet");
 const cron = require("node-cron");
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./config/swagger");
 const logger = require("./config/logger");
 const httpLogger = require("./middleware/httpLogger");
 const { errorHandler } = require("./middleware/errorHandler");
+const { validateEnv } = require("./config/validateEnv");
 require("dotenv").config();
+
+// Validar variáveis de ambiente obrigatórias no startup
+validateEnv();
 
 const authRoutes = require("./routes/auth");
 const sessaoRoutes = require("./routes/sessoes");
 const userRoutes = require("./routes/users");
 const notificacaoRoutes = require("./routes/notificacoes");
+const authMiddleware = require("./middleware/auth");
 const { cancelarSessoesPendentesExpiradas } = require("./service/cancelamentoAutomaticoService");
 
 const app = express();
+
+// Headers de segurança
+app.use(helmet());
 
 // Configuração CORS
 app.use(
@@ -78,8 +87,8 @@ app.get("/", (req, res) => {
   res.json({ message: "API Tutor Connect funcionando!" });
 });
 
-// Endpoint manual para testar cancelamento automático (útil para desenvolvimento)
-app.post("/admin/cancelar-sessoes-expiradas", async (req, res) => {
+// Endpoint manual para testar cancelamento automático (protegido por autenticação)
+app.post("/admin/cancelar-sessoes-expiradas", authMiddleware, async (req, res) => {
   try {
     logger.info("Executando cancelamento manual de sessões expiradas...");
     const resultado = await cancelarSessoesPendentesExpiradas();

@@ -3,6 +3,11 @@ const sessaoRepository = require("../repositories/sessaoRepository");
 const { AppError } = require("../middleware/errorHandler");
 const logger = require("../config/logger");
 
+// Converte data (YYYY-MM-DD) e horário (HH:MM) para Date UTC
+function toUTCDate(ano, mes, dia, hora, minuto) {
+  return new Date(Date.UTC(ano, mes - 1, dia, hora, minuto, 0, 0));
+}
+
 const availabilityService = {
   async addSlot(userId, data, horarioInicio, horarioFim) {
     if (!data || !horarioInicio || !horarioFim) {
@@ -19,8 +24,8 @@ const availabilityService = {
     const [horaInicio, minutoInicio] = horarioInicio.split(":").map(Number);
     const [horaFim, minutoFim] = horarioFim.split(":").map(Number);
 
-    const dataHoraInicio = new Date(ano, mes - 1, dia, horaInicio, minutoInicio, 0, 0);
-    const dataHoraFim = new Date(ano, mes - 1, dia, horaFim, minutoFim, 0, 0);
+    const dataHoraInicio = toUTCDate(ano, mes, dia, horaInicio, minutoInicio);
+    const dataHoraFim = toUTCDate(ano, mes, dia, horaFim, minutoFim);
     const agora = new Date();
 
     if (dataHoraInicio < agora) {
@@ -86,11 +91,11 @@ const availabilityService = {
     const disponibilidadesFuturas = tutor.disponibilidade.filter((d) => {
       const dataDisp = new Date(d.data);
       const anoDisp = dataDisp.getUTCFullYear();
-      const mesDisp = dataDisp.getUTCMonth();
+      const mesDisp = dataDisp.getUTCMonth() + 1;
       const diaDisp = dataDisp.getUTCDate();
 
       const [horaFim, minFim] = d.horario_fim.split(":").map(Number);
-      const dataHoraFim = new Date(anoDisp, mesDisp, diaDisp, horaFim, minFim, 0, 0);
+      const dataHoraFim = toUTCDate(anoDisp, mesDisp, diaDisp, horaFim, minFim);
 
       return dataHoraFim > agora;
     });
@@ -102,23 +107,23 @@ const availabilityService = {
     const disponibilidadesComStatus = disponibilidadesFuturas.map((d) => {
       const dataDisp = new Date(d.data);
       const anoDisp = dataDisp.getUTCFullYear();
-      const mesDisp = dataDisp.getUTCMonth();
+      const mesDisp = dataDisp.getUTCMonth() + 1;
       const diaDisp = dataDisp.getUTCDate();
 
       const [horaInicioDisp, minInicioDisp] = d.horario_inicio.split(":").map(Number);
       const [horaFimDisp, minFimDisp] = d.horario_fim.split(":").map(Number);
 
-      const inicioSlot = new Date(anoDisp, mesDisp, diaDisp, horaInicioDisp, minInicioDisp, 0, 0);
-      const fimSlot = new Date(anoDisp, mesDisp, diaDisp, horaFimDisp, minFimDisp, 0, 0);
+      const inicioSlot = toUTCDate(anoDisp, mesDisp, diaDisp, horaInicioDisp, minInicioDisp);
+      const fimSlot = toUTCDate(anoDisp, mesDisp, diaDisp, horaFimDisp, minFimDisp);
 
       const jaAgendado = sessoesAgendadas.some((s) => {
         const inicioSessao = new Date(s.data_hora_inicio);
         const fimSessao = new Date(s.data_hora_fim);
 
         const mesmoDia =
-          inicioSessao.getFullYear() === anoDisp &&
-          inicioSessao.getMonth() === mesDisp &&
-          inicioSessao.getDate() === diaDisp;
+          inicioSessao.getUTCFullYear() === anoDisp &&
+          inicioSessao.getUTCMonth() + 1 === mesDisp &&
+          inicioSessao.getUTCDate() === diaDisp;
 
         if (!mesmoDia) return false;
         return inicioSessao < fimSlot && fimSessao > inicioSlot;
@@ -148,14 +153,14 @@ const availabilityService = {
     const disp = user.disponibilidade[disponibilidadeIndex];
     const dataDisp = new Date(disp.data);
     const anoDisp = dataDisp.getUTCFullYear();
-    const mesDisp = dataDisp.getUTCMonth();
+    const mesDisp = dataDisp.getUTCMonth() + 1;
     const diaDisp = dataDisp.getUTCDate();
 
     const [horaInicio, minInicio] = disp.horario_inicio.split(":").map(Number);
     const [horaFim, minFim] = disp.horario_fim.split(":").map(Number);
 
-    const inicioSlot = new Date(anoDisp, mesDisp, diaDisp, horaInicio, minInicio, 0, 0);
-    const fimSlot = new Date(anoDisp, mesDisp, diaDisp, horaFim, minFim, 0, 0);
+    const inicioSlot = toUTCDate(anoDisp, mesDisp, diaDisp, horaInicio, minInicio);
+    const fimSlot = toUTCDate(anoDisp, mesDisp, diaDisp, horaFim, minFim);
 
     const sessaoExistente = await sessaoRepository.findConflicting(userId, inicioSlot, fimSlot);
 

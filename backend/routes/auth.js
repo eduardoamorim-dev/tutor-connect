@@ -1,10 +1,18 @@
 const express = require("express");
+const crypto = require("crypto");
 const authService = require("../services/authService");
 const { asyncHandler } = require("../middleware/errorHandler");
+const { authLimiter } = require("../middleware/rateLimiter");
+const { validate } = require("../middleware/validate");
+const { registerSchema, loginSchema } = require("../config/schemas");
 const logger = require("../config/logger");
 const router = express.Router();
 
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+
+// Armazenamento temporário de state tokens para OAuth CSRF protection
+const oauthStates = new Map();
+const STATE_TTL = 10 * 60 * 1000; // 10 minutos
 
 /**
  * @swagger
@@ -28,7 +36,7 @@ const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
  *       201: { description: Usuário criado com sucesso }
  *       400: { description: Dados inválidos ou email já cadastrado }
  */
-router.post("/register", asyncHandler(async (req, res) => {
+router.post("/register", authLimiter, validate(registerSchema), asyncHandler(async (req, res) => {
   const { nome, email, senha } = req.body;
   const result = await authService.register(nome, email, senha);
   res.status(201).json(result);
@@ -55,7 +63,7 @@ router.post("/register", asyncHandler(async (req, res) => {
  *       200: { description: Login bem-sucedido, retorna token JWT }
  *       401: { description: Credenciais inválidas }
  */
-router.post("/login", asyncHandler(async (req, res) => {
+router.post("/login", authLimiter, validate(loginSchema), asyncHandler(async (req, res) => {
   const { email, senha } = req.body;
   const result = await authService.login(email, senha);
   res.json(result);
@@ -72,7 +80,18 @@ router.post("/login", asyncHandler(async (req, res) => {
  *       302: { description: Redireciona para tela de login do Google }
  */
 router.get("/google", asyncHandler(async (req, res) => {
-  const url = authService.getGoogleAuthUrl();
+  // Gerar state token para proteção CSRF
+  const state = crypto.randomBytes(32).toString("hex");
+  oauthStates.set(state, Date.now());
+
+  // Limpar states expirados
+  for (const [key, timestamp] of oauthStates) {
+    if (Date.now() - timestamp > STATE_TTL) {
+      oauthStates.delete(key);
+    }
+  }
+
+  const url = authService.getGoogleAuthUrl(state);
   res.redirect(url);
 }));
 
@@ -91,10 +110,24 @@ router.get("/google", asyncHandler(async (req, res) => {
  *       302: { description: Redireciona para o frontend com token }
  */
 router.get("/google/callback", asyncHandler(async (req, res) => {
-  const { code, error } = req.query;
+  const { code, error, state } = req.query;
 
   if (error) {
     return res.redirect(`${FRONTEND_URL}/login?error=${error}`);
+  }
+
+  // Validar state parameter (proteção CSRF)
+  if (!state || !oauthStates.has(state)) {
+    logger.warn("OAuth callback com state inválido ou ausente");
+    return res.redirect(`${FRONTEND_URL}/login?error=invalid_state`);
+  }
+
+  const stateTimestamp = oauthStates.get(state);
+  oauthStates.delete(state);
+
+  if (Date.now() - stateTimestamp > STATE_TTL) {
+    logger.warn("OAuth callback com state expirado");
+    return res.redirect(`${FRONTEND_URL}/login?error=state_expired`);
   }
 
   if (!code) {

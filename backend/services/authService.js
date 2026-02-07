@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const { google } = require("googleapis");
 const userRepository = require("../repositories/userRepository");
 const { AppError } = require("../middleware/errorHandler");
+const { encrypt, decrypt } = require("../config/crypto");
 const logger = require("../config/logger");
 
 require("dotenv").config();
@@ -91,9 +92,10 @@ const authService = {
       });
     }
 
-    user.googleAccessToken = tokens.access_token;
+    // Criptografar tokens antes de salvar no banco
+    user.googleAccessToken = encrypt(tokens.access_token);
     if (tokens.refresh_token) {
-      user.googleRefreshToken = tokens.refresh_token;
+      user.googleRefreshToken = encrypt(tokens.refresh_token);
     }
     if (tokens.expiry_date) {
       user.googleTokenExpiry = new Date(tokens.expiry_date);
@@ -125,7 +127,7 @@ const authService = {
     }
   },
 
-  getGoogleAuthUrl() {
+  getGoogleAuthUrl(state) {
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
@@ -135,6 +137,7 @@ const authService = {
     return oauth2Client.generateAuthUrl({
       access_type: "offline",
       prompt: "consent",
+      state,
       scope: [
         "https://www.googleapis.com/auth/userinfo.profile",
         "https://www.googleapis.com/auth/userinfo.email",
@@ -142,6 +145,16 @@ const authService = {
         "https://www.googleapis.com/auth/calendar.events",
       ],
     });
+  },
+
+  decryptGoogleToken(encryptedToken) {
+    if (!encryptedToken) return null;
+    try {
+      return decrypt(encryptedToken);
+    } catch {
+      // Token pode ser um valor antigo não criptografado
+      return encryptedToken;
+    }
   },
 };
 

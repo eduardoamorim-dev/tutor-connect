@@ -1,8 +1,18 @@
 const { google } = require("googleapis");
 const userRepository = require("../repositories/userRepository");
+const { decrypt } = require("../config/crypto");
 const logger = require("../config/logger");
 
 require("dotenv").config();
+
+function decryptToken(token) {
+  if (!token) return token;
+  try {
+    return decrypt(token);
+  } catch {
+    return token;
+  }
+}
 
 const googleCalendarService = {
   createOAuth2Client(user) {
@@ -12,8 +22,8 @@ const googleCalendarService = {
       process.env.GOOGLE_REDIRECT_URI,
     );
     oauth2Client.setCredentials({
-      access_token: user.googleAccessToken,
-      refresh_token: user.googleRefreshToken,
+      access_token: decryptToken(user.googleAccessToken),
+      refresh_token: decryptToken(user.googleRefreshToken),
     });
     return oauth2Client;
   },
@@ -34,15 +44,16 @@ const googleCalendarService = {
       const oauth2Client = this.createOAuth2Client(user);
       const { credentials } = await oauth2Client.refreshAccessToken();
 
+      const { encrypt } = require("../config/crypto");
       await userRepository.updateGoogleTokens(user._id, {
-        access_token: credentials.access_token,
-        refresh_token: credentials.refresh_token || user.googleRefreshToken,
+        access_token: encrypt(credentials.access_token),
+        refresh_token: credentials.refresh_token ? encrypt(credentials.refresh_token) : user.googleRefreshToken,
         expiry_date: credentials.expiry_date,
       });
 
-      user.googleAccessToken = credentials.access_token;
+      user.googleAccessToken = encrypt(credentials.access_token);
       if (credentials.refresh_token) {
-        user.googleRefreshToken = credentials.refresh_token;
+        user.googleRefreshToken = encrypt(credentials.refresh_token);
       }
       if (credentials.expiry_date) {
         user.googleTokenExpiry = new Date(credentials.expiry_date);

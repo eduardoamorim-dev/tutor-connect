@@ -3,6 +3,8 @@ const authMiddleware = require("../middleware/auth");
 const userService = require("../services/userService");
 const availabilityService = require("../services/availabilityService");
 const { asyncHandler } = require("../middleware/errorHandler");
+const { validate } = require("../middleware/validate");
+const { profileUpdateSchema, disponibilidadeSchema } = require("../config/schemas");
 const router = express.Router();
 
 /**
@@ -95,7 +97,7 @@ router.get("/profile", authMiddleware, asyncHandler(async (req, res) => {
  *     responses:
  *       200: { description: Perfil atualizado }
  */
-router.put("/profile", authMiddleware, asyncHandler(async (req, res) => {
+router.put("/profile", authMiddleware, validate(profileUpdateSchema), asyncHandler(async (req, res) => {
   const user = await userService.updateProfile(req.userId, req.body);
   res.json(user);
 }));
@@ -121,7 +123,7 @@ router.put("/profile", authMiddleware, asyncHandler(async (req, res) => {
  *       200: { description: Disponibilidade adicionada }
  *       400: { description: Conflito ou dados inválidos }
  */
-router.post("/disponibilidade", authMiddleware, asyncHandler(async (req, res) => {
+router.post("/disponibilidade", authMiddleware, validate(disponibilidadeSchema), asyncHandler(async (req, res) => {
   const { data, horario_inicio, horario_fim } = req.body;
   const result = await availabilityService.addSlot(req.userId, data, horario_inicio, horario_fim);
   res.json(result);

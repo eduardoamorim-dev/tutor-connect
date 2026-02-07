@@ -3,6 +3,8 @@ const authMiddleware = require("../middleware/auth");
 const sessionService = require("../services/sessionService");
 const ratingService = require("../services/ratingService");
 const { asyncHandler } = require("../middleware/errorHandler");
+const { validate } = require("../middleware/validate");
+const { createSessionSchema, ratingSchema } = require("../config/schemas");
 const router = express.Router();
 
 /**
@@ -28,7 +30,7 @@ const router = express.Router();
  *       201: { description: Sessão criada }
  *       400: { description: Dados inválidos ou conflito de horário }
  */
-router.post("/create", authMiddleware, asyncHandler(async (req, res) => {
+router.post("/create", authMiddleware, validate(createSessionSchema), asyncHandler(async (req, res) => {
   const { tutorId, disciplina, data_hora_inicio, data_hora_fim, observacoes } = req.body;
   const sessao = await sessionService.createSession(
     req.userId, tutorId, disciplina, data_hora_inicio, data_hora_fim, observacoes,
@@ -177,7 +179,7 @@ router.put("/:id/cancelar", authMiddleware, asyncHandler(async (req, res) => {
  *       200: { description: Avaliação enviada }
  *       403: { description: Apenas o aluno pode avaliar }
  */
-router.post("/avaliar", authMiddleware, asyncHandler(async (req, res) => {
+router.post("/avaliar", authMiddleware, validate(ratingSchema), asyncHandler(async (req, res) => {
   const { sessaoId, nota, comentario } = req.body;
   const result = await ratingService.createRating(req.userId, sessaoId, nota, comentario);
   res.json(result);
