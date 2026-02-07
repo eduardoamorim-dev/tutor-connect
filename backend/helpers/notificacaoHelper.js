@@ -1,4 +1,5 @@
 const Notificacao = require("../models/Notificacao");
+const logger = require("../config/logger");
 
 // Helper para criar notificações
 const criarNotificacao = async (
@@ -19,7 +20,7 @@ const criarNotificacao = async (
     await notificacao.save();
     return notificacao;
   } catch (error) {
-    console.error("Erro ao criar notificação:", error);
+    logger.error("Erro ao criar notificação:", { error: error.message });
     return null;
   }
 };

@@ -2,6 +2,11 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const cron = require("node-cron");
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./config/swagger");
+const logger = require("./config/logger");
+const httpLogger = require("./middleware/httpLogger");
+const { errorHandler } = require("./middleware/errorHandler");
 require("dotenv").config();
 
 const authRoutes = require("./routes/auth");
@@ -15,7 +20,7 @@ const app = express();
 // Configuração CORS
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: process.env.CORS_ORIGIN || "http://localhost:3000",
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -23,46 +28,44 @@ app.use(
 );
 
 app.use(express.json());
+app.use(httpLogger);
 
 // Conectar ao MongoDB
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
-    console.log("✅ MongoDB conectado");
-    
+    logger.info("MongoDB conectado");
+
     // Executar verificação inicial ao iniciar o servidor
-    console.log("Executando verificação inicial de sessões pendentes...");
+    logger.info("Executando verificação inicial de sessões pendentes...");
     cancelarSessoesPendentesExpiradas()
       .then((resultado) => {
-        console.log(`Verificação inicial concluída: ${resultado.canceladas} sessões canceladas`);
+        logger.info(`Verificação inicial concluída: ${resultado.canceladas} sessões canceladas`);
       })
       .catch((error) => {
-        console.error("Erro na verificação inicial:", error);
+        logger.error("Erro na verificação inicial:", { error: error.message });
       });
   })
   .catch((err) => {
-    console.error("Erro ao conectar MongoDB:", err);
+    logger.error("Erro ao conectar MongoDB:", { error: err.message });
     process.exit(1);
   });
 
-// Configurar job de cancelamento automático
-// Executa a cada 1 minuto
+// Configurar job de cancelamento automático (executa a cada 1 minuto)
 cron.schedule("*/1 * * * *", async () => {
-  console.log("\n [CRON] Iniciando verificação de sessões pendentes expiradas...");
+  logger.info("[CRON] Iniciando verificação de sessões pendentes expiradas...");
   try {
     const resultado = await cancelarSessoesPendentesExpiradas();
-    console.log(`[CRON] Verificação concluída: ${resultado.canceladas} sessões canceladas\n`);
+    logger.info(`[CRON] Verificação concluída: ${resultado.canceladas} sessões canceladas`);
   } catch (error) {
-    console.error("[CRON] Erro ao executar verificação:", error);
+    logger.error("[CRON] Erro ao executar verificação:", { error: error.message });
   }
 });
 
-console.log("Job de cancelamento automático configurado (executa a cada 10 minutos)");
+logger.info("Job de cancelamento automático configurado (executa a cada 1 minuto)");
 
-// Job automático para cancelar sessões expiradas não confirmadas pelo tutor
-setInterval(() => {
-  cancelarSessoesPendentesExpiradas();
-}, 60 * 1000); // a cada 1 minuto
+// Documentação Swagger
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Rotas
 app.use("/auth", authRoutes);
@@ -78,7 +81,7 @@ app.get("/", (req, res) => {
 // Endpoint manual para testar cancelamento automático (útil para desenvolvimento)
 app.post("/admin/cancelar-sessoes-expiradas", async (req, res) => {
   try {
-    console.log("Executando cancelamento manual de sessões expiradas...");
+    logger.info("Executando cancelamento manual de sessões expiradas...");
     const resultado = await cancelarSessoesPendentesExpiradas();
     res.json({
       message: "Verificação executada com sucesso",
@@ -86,19 +89,16 @@ app.post("/admin/cancelar-sessoes-expiradas", async (req, res) => {
       erros: resultado.erros || 0,
     });
   } catch (error) {
-    console.error("Erro ao executar cancelamento manual:", error);
+    logger.error("Erro ao executar cancelamento manual:", { error: error.message });
     res.status(500).json({ error: error.message });
   }
 });
 
 // Tratamento de erros global
-app.use((err, req, res, next) => {
-  console.error("Erro não tratado:", err.stack);
-  res.status(500).json({ error: "Algo deu errado!" });
-});
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-  console.log(`URL: http://localhost:${PORT}`);
+  logger.info(`Servidor rodando na porta ${PORT}`);
+  logger.info(`URL: http://localhost:${PORT}`);
 });

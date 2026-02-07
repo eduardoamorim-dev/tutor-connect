@@ -1,124 +1,120 @@
 const express = require("express");
-const jwt = require("jsonwebtoken");
-const Notificacao = require("../models/Notificacao");
+const authMiddleware = require("../middleware/auth");
+const notificationService = require("../services/notificationService");
+const { asyncHandler } = require("../middleware/errorHandler");
 const router = express.Router();
 
-require("dotenv").config();
+/**
+ * @swagger
+ * /notificacoes:
+ *   get:
+ *     summary: Listar notificações do usuário
+ *     tags: [Notificacoes]
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer, default: 20 }
+ *       - in: query
+ *         name: apenas_nao_lidas
+ *         schema: { type: string, enum: ["true", "false"] }
+ *     responses:
+ *       200: { description: Lista de notificações }
+ */
+router.get("/", authMiddleware, asyncHandler(async (req, res) => {
+  const { limit = 20, apenas_nao_lidas } = req.query;
+  const result = await notificationService.list(req.userId, {
+    limit: parseInt(limit),
+    apenasNaoLidas: apenas_nao_lidas === "true",
+  });
+  res.json(result.data);
+}));
 
-// Middleware para verificar JWT
-const authMiddleware = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) return res.status(401).json({ error: "Token não fornecido" });
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.userId = decoded.id;
-    next();
-  } catch (error) {
-    res.status(401).json({ error: "Token inválido" });
-  }
-};
+/**
+ * @swagger
+ * /notificacoes/count:
+ *   get:
+ *     summary: Contar notificações não lidas
+ *     tags: [Notificacoes]
+ *     responses:
+ *       200:
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 count: { type: integer }
+ */
+router.get("/count", authMiddleware, asyncHandler(async (req, res) => {
+  const result = await notificationService.countUnread(req.userId);
+  res.json(result);
+}));
 
-// Listar notificações do usuário
-router.get("/", authMiddleware, async (req, res) => {
-  try {
-    const { limit = 20, apenas_nao_lidas } = req.query;
+/**
+ * @swagger
+ * /notificacoes/{id}/ler:
+ *   put:
+ *     summary: Marcar notificação como lida
+ *     tags: [Notificacoes]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Notificação marcada como lida }
+ *       404: { description: Notificação não encontrada }
+ */
+router.put("/:id/ler", authMiddleware, asyncHandler(async (req, res) => {
+  const result = await notificationService.markAsRead(req.params.id, req.userId);
+  res.json(result);
+}));
 
-    let query = { usuario: req.userId };
+/**
+ * @swagger
+ * /notificacoes/ler-todas:
+ *   put:
+ *     summary: Marcar todas as notificações como lidas
+ *     tags: [Notificacoes]
+ *     responses:
+ *       200: { description: Todas marcadas como lidas }
+ */
+router.put("/ler-todas", authMiddleware, asyncHandler(async (req, res) => {
+  const result = await notificationService.markAllAsRead(req.userId);
+  res.json(result);
+}));
 
-    if (apenas_nao_lidas === "true") {
-      query.lida = false;
-    }
+/**
+ * @swagger
+ * /notificacoes/{id}:
+ *   delete:
+ *     summary: Deletar notificação
+ *     tags: [Notificacoes]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Notificação removida }
+ *       404: { description: Notificação não encontrada }
+ */
+router.delete("/:id", authMiddleware, asyncHandler(async (req, res) => {
+  const result = await notificationService.deleteById(req.params.id, req.userId);
+  res.json(result);
+}));
 
-    const notificacoes = await Notificacao.find(query)
-      .populate("sessao", "disciplina data_hora_inicio tutor aluno")
-      .sort({ data_criacao: -1 })
-      .limit(parseInt(limit));
-
-    res.json(notificacoes);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-// Contar notificações não lidas
-router.get("/count", authMiddleware, async (req, res) => {
-  try {
-    const count = await Notificacao.countDocuments({
-      usuario: req.userId,
-      lida: false,
-    });
-
-    res.json({ count });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-// Marcar notificação como lida
-router.put("/:id/ler", authMiddleware, async (req, res) => {
-  try {
-    const notificacao = await Notificacao.findOne({
-      _id: req.params.id,
-      usuario: req.userId,
-    });
-
-    if (!notificacao) {
-      return res.status(404).json({ error: "Notificação não encontrada" });
-    }
-
-    notificacao.lida = true;
-    await notificacao.save();
-
-    res.json({ message: "Notificação marcada como lida" });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-// Marcar todas como lidas
-router.put("/ler-todas", authMiddleware, async (req, res) => {
-  try {
-    await Notificacao.updateMany(
-      { usuario: req.userId, lida: false },
-      { lida: true },
-    );
-
-    res.json({ message: "Todas as notificações marcadas como lidas" });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-// Deletar notificação
-router.delete("/:id", authMiddleware, async (req, res) => {
-  try {
-    const notificacao = await Notificacao.findOneAndDelete({
-      _id: req.params.id,
-      usuario: req.userId,
-    });
-
-    if (!notificacao) {
-      return res.status(404).json({ error: "Notificação não encontrada" });
-    }
-
-    res.json({ message: "Notificação removida" });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
-
-// Deletar todas as notificações lidas
-router.delete("/", authMiddleware, async (req, res) => {
-  try {
-    await Notificacao.deleteMany({
-      usuario: req.userId,
-      lida: true,
-    });
-
-    res.json({ message: "Notificações lidas removidas" });
-  } catch (error) {
-    res.status(400).json({ error: error.message });
-  }
-});
+/**
+ * @swagger
+ * /notificacoes:
+ *   delete:
+ *     summary: Deletar todas as notificações lidas
+ *     tags: [Notificacoes]
+ *     responses:
+ *       200: { description: Notificações lidas removidas }
+ */
+router.delete("/", authMiddleware, asyncHandler(async (req, res) => {
+  const result = await notificationService.deleteAllRead(req.userId);
+  res.json(result);
+}));
 
 module.exports = router;
