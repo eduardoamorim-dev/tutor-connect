@@ -491,25 +491,25 @@ Objetivo: Corrigir problemas criticos de seguranca e bugs.
 
 **Semana 1: Seguranca e bugs criticos**
 
-- [ ] Adicionar autenticacao ao endpoint admin (`server.js:79`)
-- [ ] Mover CORS origin para variavel de ambiente
-- [ ] Centralizar URL da API do frontend em variavel de ambiente
-- [ ] Corrigir versao do react-scripts para `^5.0.0`
-- [ ] Remover setInterval duplicado (manter apenas cron)
-- [ ] Corrigir race condition na avaliacao (usar MongoDB aggregation)
-- [ ] Adicionar Error Boundary global no frontend
-- [ ] Remover arquivos vazios (Agendamento.js, Avaliacao.js)
+- [x] Adicionar autenticacao ao endpoint admin (`server.js:82`) -- authMiddleware adicionado
+- [x] Mover CORS origin para variavel de ambiente -- ja estava usando CORS_ORIGIN
+- [x] Centralizar URL da API do frontend em variavel de ambiente -- ja estava usando REACT_APP_API_URL
+- [x] Corrigir versao do react-scripts para `^5.0.0` -- ja estava em ^5.0.1
+- [x] Remover setInterval duplicado (manter apenas cron) -- ja estava usando apenas cron
+- [x] Corrigir race condition na avaliacao (usar MongoDB aggregation) -- ja estava usando aggregation
+- [x] Adicionar Error Boundary global no frontend -- ErrorBoundary.js criado e wrapping App
+- [x] Remover arquivos vazios (Agendamento.js, Avaliacao.js) -- ja estavam removidos
 
 **Semana 2: Seguranca avancada**
 
-- [ ] Implementar state parameter no OAuth (protecao CSRF)
-- [ ] Criptografar tokens Google no banco de dados
-- [ ] Adicionar rate limiting nos endpoints de autenticacao
-- [ ] Implementar validacao de input com Joi ou Zod
-- [ ] Adicionar headers de seguranca com Helmet
-- [ ] Validar forca de senha no registro
-- [ ] Adicionar validacao de variaveis de ambiente no startup
-- [ ] Corrigir tratamento de timezone
+- [x] Implementar state parameter no OAuth (protecao CSRF) -- state token com Map + TTL
+- [x] Criptografar tokens Google no banco de dados -- AES-256-GCM via config/crypto.js
+- [x] Adicionar rate limiting nos endpoints de autenticacao -- express-rate-limit (20 req/15min)
+- [x] Implementar validacao de input com Zod -- schemas em config/schemas.js + middleware validate.js
+- [x] Adicionar headers de seguranca com Helmet -- helmet() no server.js
+- [x] Validar forca de senha no registro -- min 8 chars, maiuscula, minuscula, numero via Zod
+- [x] Adicionar validacao de variaveis de ambiente no startup -- config/validateEnv.js
+- [x] Corrigir tratamento de timezone -- UTC consistente no availabilityService
 
 ### Fase 1 -- Fundacao Tecnica (Semanas 3-6)
 
