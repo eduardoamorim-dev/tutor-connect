@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import notificacoesApi from "../api/services/notificacoesApi";
 import {
   Bell,
   Check,
@@ -14,8 +14,6 @@ import {
   Loader2,
   ExternalLink,
 } from "lucide-react";
-
-const API_URL = "http://localhost:5001";
 
 // Ícones por tipo de notificação
 const getNotificationIcon = (tipo) => {
@@ -90,7 +88,7 @@ function formatDateTime(date) {
   });
 }
 
-function Notifications({ token }) {
+function Notifications() {
   const [isOpen, setIsOpen] = useState(false);
   const [notificacoes, setNotificacoes] = useState([]);
   const [count, setCount] = useState(0);
@@ -98,12 +96,10 @@ function Notifications({ token }) {
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
-  const headers = { Authorization: `Bearer ${token}` };
-
   // Buscar contagem de não lidas
   const fetchCount = async () => {
     try {
-      const res = await axios.get(`${API_URL}/notificacoes/count`, { headers });
+      const res = await notificacoesApi.count();
       setCount(res.data.count);
     } catch (error) {
       console.error("Erro ao buscar contagem:", error);
@@ -114,9 +110,7 @@ function Notifications({ token }) {
   const fetchNotificacoes = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_URL}/notificacoes?limit=20`, {
-        headers,
-      });
+      const res = await notificacoesApi.list({ limit: 20 });
       setNotificacoes(res.data);
     } catch (error) {
       console.error("Erro ao buscar notificações:", error);
@@ -128,7 +122,7 @@ function Notifications({ token }) {
   // Marcar como lida
   const marcarComoLida = async (id) => {
     try {
-      await axios.put(`${API_URL}/notificacoes/${id}/ler`, {}, { headers });
+      await notificacoesApi.markRead(id);
       setNotificacoes((prev) =>
         prev.map((n) => (n._id === id ? { ...n, lida: true } : n)),
       );
@@ -141,7 +135,7 @@ function Notifications({ token }) {
   // Marcar todas como lidas
   const marcarTodasComoLidas = async () => {
     try {
-      await axios.put(`${API_URL}/notificacoes/ler-todas`, {}, { headers });
+      await notificacoesApi.markAllRead();
       setNotificacoes((prev) => prev.map((n) => ({ ...n, lida: true })));
       setCount(0);
     } catch (error) {
@@ -153,7 +147,7 @@ function Notifications({ token }) {
   const deletarNotificacao = async (id, e) => {
     e.stopPropagation();
     try {
-      await axios.delete(`${API_URL}/notificacoes/${id}`, { headers });
+      await notificacoesApi.deleteOne(id);
       const notificacao = notificacoes.find((n) => n._id === id);
       setNotificacoes((prev) => prev.filter((n) => n._id !== id));
       if (!notificacao?.lida) {
@@ -167,7 +161,7 @@ function Notifications({ token }) {
   // Limpar todas lidas
   const limparLidas = async () => {
     try {
-      await axios.delete(`${API_URL}/notificacoes`, { headers });
+      await notificacoesApi.deleteAllRead();
       setNotificacoes((prev) => prev.filter((n) => !n.lida));
     } catch (error) {
       console.error("Erro ao limpar lidas:", error);
@@ -211,7 +205,7 @@ function Notifications({ token }) {
     fetchCount();
     const interval = setInterval(fetchCount, 30000); // A cada 30 segundos
     return () => clearInterval(interval);
-  }, [token]);
+  }, []);
 
   // Buscar notificações quando abrir
   useEffect(() => {

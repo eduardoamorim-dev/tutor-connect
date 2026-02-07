@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { toast } from "sonner";
+import { useAuth } from "../contexts/AuthContext";
+import usersApi from "../api/services/usersApi";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -27,8 +28,6 @@ import {
   Star,
   Calendar as CalendarIcon,
 } from "lucide-react";
-
-const API_URL = "http://localhost:5001";
 
 const DISCIPLINAS_SUGERIDAS = [
   "Cálculo I",
@@ -60,7 +59,8 @@ const DISCIPLINAS_SUGERIDAS = [
 
 const NIVEIS = ["Básico", "Intermediário", "Avançado"];
 
-function Profile({ token, user, onUpdate }) {
+function Profile() {
+  const { user, refreshUser } = useAuth();
   const [loading, setLoading] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [savingDisponibilidade, setSavingDisponibilidade] = useState(false);
@@ -92,15 +92,13 @@ function Profile({ token, user, onUpdate }) {
     totalAvaliacoes: 0,
   });
 
-  const headers = { Authorization: `Bearer ${token}` };
-
   useEffect(() => {
     loadProfile();
   }, []);
 
   const loadProfile = async () => {
     try {
-      const response = await axios.get(`${API_URL}/users/profile`, { headers });
+      const response = await usersApi.getProfile();
       const data = response.data;
       setFormData({
         bio: data.bio || "",
@@ -224,11 +222,7 @@ function Profile({ token, user, onUpdate }) {
 
     try {
       setSavingDisponibilidade(true);
-      const response = await axios.post(
-        `${API_URL}/users/disponibilidade`,
-        novaDisponibilidade,
-        { headers },
-      );
+      const response = await usersApi.addDisponibilidade(novaDisponibilidade);
       setFormData({
         ...formData,
         disponibilidade: response.data.disponibilidade,
@@ -248,10 +242,7 @@ function Profile({ token, user, onUpdate }) {
 
   const removerDisponibilidade = async (id) => {
     try {
-      const response = await axios.delete(
-        `${API_URL}/users/disponibilidade/${id}`,
-        { headers },
-      );
+      const response = await usersApi.removeDisponibilidade(id);
       setFormData({
         ...formData,
         disponibilidade: response.data.disponibilidade,
@@ -271,19 +262,15 @@ function Profile({ token, user, onUpdate }) {
     }
     try {
       setLoading(true);
-      await axios.put(
-        `${API_URL}/users/profile`,
-        {
-          bio: formData.bio,
-          localizacao: formData.localizacao,
-          isTutor: formData.isTutor,
-          disciplinas_dominadas: formData.disciplinas_dominadas,
-          disciplinas_precisa: formData.disciplinas_precisa,
-        },
-        { headers },
-      );
+      await usersApi.updateProfile({
+        bio: formData.bio,
+        localizacao: formData.localizacao,
+        isTutor: formData.isTutor,
+        disciplinas_dominadas: formData.disciplinas_dominadas,
+        disciplinas_precisa: formData.disciplinas_precisa,
+      });
       toast.success("Perfil atualizado!");
-      if (onUpdate) onUpdate();
+      refreshUser();
     } catch (error) {
       toast.error("Erro ao salvar perfil");
     } finally {

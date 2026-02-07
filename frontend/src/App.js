@@ -7,8 +7,10 @@ import {
   useNavigate,
   useLocation,
 } from "react-router-dom";
-import axios from "axios";
 import { Toaster } from "sonner";
+import { QueryClientProvider } from "@tanstack/react-query";
+import queryClient from "./api/queryClient";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
 import ProfileSetup from "./components/ProfileSetup";
@@ -25,33 +27,10 @@ import {
 } from "lucide-react";
 import "./index.css";
 
-const API_URL = "http://localhost:5001";
-
 // Componente wrapper para verificar se precisa de onboarding
-function ProtectedRoute({ token, children }) {
-  const [needsOnboarding, setNeedsOnboarding] = useState(null);
-  const [loading, setLoading] = useState(true);
+function ProtectedRoute({ children }) {
+  const { user, loading } = useAuth();
   const location = useLocation();
-
-  useEffect(() => {
-    const checkProfile = async () => {
-      try {
-        const res = await axios.get(`${API_URL}/users/profile`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setNeedsOnboarding(!res.data.profileCompleted);
-      } catch (error) {
-        console.error("Erro ao verificar perfil:", error);
-        setNeedsOnboarding(false);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (token) {
-      checkProfile();
-    }
-  }, [token]);
 
   if (loading) {
     return (
@@ -74,6 +53,8 @@ function ProtectedRoute({ token, children }) {
     );
   }
 
+  const needsOnboarding = user && !user.profileCompleted;
+
   if (needsOnboarding && location.pathname !== "/setup-profile") {
     return <Navigate to="/setup-profile" replace />;
   }
@@ -82,7 +63,8 @@ function ProtectedRoute({ token, children }) {
 }
 
 // Componente de Navbar Profissional
-function Navbar({ user, token, onLogout }) {
+function Navbar() {
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -159,7 +141,7 @@ function Navbar({ user, token, onLogout }) {
             {/* Right Section */}
             <div className="flex items-center gap-2 sm:gap-4">
               {/* Notificações */}
-              <Notifications token={token} />
+              <Notifications />
 
               {/* User Menu - Desktop */}
               <div className="hidden sm:flex items-center gap-3 pl-4 border-l border-gray-200">
@@ -177,7 +159,7 @@ function Navbar({ user, token, onLogout }) {
                   </AvatarFallback>
                 </Avatar>
                 <button
-                  onClick={onLogout}
+                  onClick={logout}
                   className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all duration-200"
                   title="Sair"
                 >
@@ -244,7 +226,7 @@ function Navbar({ user, token, onLogout }) {
             {/* Logout Mobile */}
             <button
               onClick={() => {
-                onLogout();
+                logout();
                 setMobileMenuOpen(false);
               }}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left font-medium text-red-600 hover:bg-red-50 transition-all duration-200 mt-4 border-t pt-4"
@@ -267,63 +249,8 @@ function Navbar({ user, token, onLogout }) {
   );
 }
 
-function App() {
-  const [token, setToken] = useState(localStorage.getItem("token"));
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Verifica se há token na URL (callback do Google)
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlToken = urlParams.get("token");
-
-    if (urlToken) {
-      localStorage.setItem("token", urlToken);
-      setToken(urlToken);
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-
-    // Verifica validade do token
-    const verifyToken = async () => {
-      const currentToken = urlToken || token;
-      if (currentToken) {
-        try {
-          const res = await axios.get(`${API_URL}/auth/verify`, {
-            headers: { Authorization: `Bearer ${currentToken}` },
-          });
-          if (res.data.valid) {
-            setUser(res.data.user);
-          } else {
-            localStorage.removeItem("token");
-            setToken(null);
-          }
-        } catch {
-          localStorage.removeItem("token");
-          setToken(null);
-        }
-      }
-      setLoading(false);
-    };
-
-    verifyToken();
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    setToken(null);
-    setUser(null);
-  };
-
-  const refreshUser = async () => {
-    try {
-      const res = await axios.get(`${API_URL}/users/profile`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setUser(res.data);
-    } catch (error) {
-      console.error("Erro ao atualizar usuário:", error);
-    }
-  };
+function AppRoutes() {
+  const { token, user, loading, refreshUser } = useAuth();
 
   if (loading) {
     return (
@@ -341,83 +268,84 @@ function App() {
   const showNavbar = token && user?.profileCompleted;
 
   return (
-    <Router>
-      <Toaster
-        position="top-right"
-        richColors
-        toastOptions={{
-          style: {
-            borderRadius: "12px",
-          },
-        }}
-      />
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-violet-50/30">
-        {showNavbar && (
-          <Navbar user={user} token={token} onLogout={handleLogout} />
-        )}
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-violet-50/30">
+      {showNavbar && <Navbar />}
 
-        <Routes>
-          <Route
-            path="/login"
-            element={
-              token ? (
-                <Navigate to="/dashboard" />
-              ) : (
-                <Login setToken={setToken} />
-              )
-            }
-          />
+      <Routes>
+        <Route
+          path="/login"
+          element={token ? <Navigate to="/dashboard" /> : <Login />}
+        />
 
-          <Route
-            path="/setup-profile"
-            element={
-              token ? (
-                <ProfileSetup
-                  token={token}
-                  onComplete={() => {
-                    refreshUser();
-                    window.location.href = "/dashboard";
-                  }}
-                />
-              ) : (
-                <Navigate to="/login" />
-              )
-            }
-          />
+        <Route
+          path="/setup-profile"
+          element={
+            token ? (
+              <ProfileSetup
+                onComplete={() => {
+                  refreshUser();
+                  window.location.href = "/dashboard";
+                }}
+              />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
 
-          <Route
-            path="/dashboard"
-            element={
-              token ? (
-                <ProtectedRoute token={token}>
-                  <Dashboard token={token} user={user} />
-                </ProtectedRoute>
-              ) : (
-                <Navigate to="/login" />
-              )
-            }
-          />
+        <Route
+          path="/dashboard"
+          element={
+            token ? (
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
 
-          <Route
-            path="/profile"
-            element={
-              token ? (
-                <ProtectedRoute token={token}>
-                  <Profile token={token} user={user} onUpdate={refreshUser} />
-                </ProtectedRoute>
-              ) : (
-                <Navigate to="/login" />
-              )
-            }
-          />
+        <Route
+          path="/profile"
+          element={
+            token ? (
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
 
-          <Route
-            path="/"
-            element={<Navigate to={token ? "/dashboard" : "/login"} />}
+        <Route
+          path="/"
+          element={<Navigate to={token ? "/dashboard" : "/login"} />}
+        />
+      </Routes>
+    </div>
+  );
+}
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <Router>
+          <Toaster
+            position="top-right"
+            richColors
+            toastOptions={{
+              style: {
+                borderRadius: "12px",
+              },
+            }}
           />
-        </Routes>
-      </div>
-    </Router>
+          <AppRoutes />
+        </Router>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 

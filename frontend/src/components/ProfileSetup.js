@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import { toast } from "sonner";
+import usersApi from "../api/services/usersApi";
 import {
   Card,
   CardContent,
@@ -32,8 +32,6 @@ import {
   Check,
 } from "lucide-react";
 
-const API_URL = "http://localhost:5001";
-
 const DISCIPLINAS_SUGERIDAS = [
   "Cálculo I",
   "Cálculo II",
@@ -64,7 +62,7 @@ const DISCIPLINAS_SUGERIDAS = [
 
 const NIVEIS = ["Básico", "Intermediário", "Avançado"];
 
-function ProfileSetup({ token, onComplete }) {
+function ProfileSetup({ onComplete }) {
   const [loading, setLoading] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [step, setStep] = useState(1);
@@ -82,15 +80,13 @@ function ProfileSetup({ token, onComplete }) {
   const [novaDisciplinaPrecisa, setNovaDisciplinaPrecisa] = useState("");
   const [nivelPrecisa, setNivelPrecisa] = useState("Básico");
 
-  const headers = { Authorization: `Bearer ${token}` };
-
   useEffect(() => {
     loadProfile();
   }, []);
 
   const loadProfile = async () => {
     try {
-      const response = await axios.get(`${API_URL}/users/profile`, { headers });
+      const response = await usersApi.getProfile();
       setFormData({
         bio: response.data.bio || "",
         localizacao: response.data.localizacao || "",
@@ -160,7 +156,7 @@ function ProfileSetup({ token, onComplete }) {
     }
     try {
       setLoading(true);
-      await axios.put(`${API_URL}/users/profile`, formData, { headers });
+      await usersApi.updateProfile(formData);
       toast.success("Perfil salvo!");
       if (onComplete) onComplete();
     } catch (error) {

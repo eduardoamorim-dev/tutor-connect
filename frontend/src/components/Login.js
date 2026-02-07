@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "./ui/button";
-import axios from "axios";
+import usersApi from "../api/services/usersApi";
+import authApi from "../api/services/authApi";
 import {
   Loader2,
   ArrowRight,
@@ -24,15 +25,15 @@ function Login() {
   const [contagem, setContagem] = React.useState({ totalTutores: 0, totalAlunos: 0 });
 
   React.useEffect(() => {
-    axios
-      .get("http://localhost:5001/users/contagem")
+    usersApi
+      .getContagem()
       .then((res) => setContagem(res.data))
       .catch(() => setContagem({ totalTutores: 0, totalAlunos: 0 }));
   }, []);
 
   const handleGoogleLogin = () => {
     setIsLoading(true);
-    window.location.href = "http://localhost:5001/auth/google";
+    window.location.href = authApi.getGoogleAuthUrl();
   };
 
   const features = [
