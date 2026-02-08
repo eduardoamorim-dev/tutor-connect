@@ -22,10 +22,7 @@ const avaliacaoRepository = {
       q = q.skip(skip).limit(options.perPage);
     }
 
-    const [data, total] = await Promise.all([
-      q,
-      Avaliacao.countDocuments({ tutor: tutorId }),
-    ]);
+    const [data, total] = await Promise.all([q, Avaliacao.countDocuments({ tutor: tutorId })]);
 
     return { data, total };
   },

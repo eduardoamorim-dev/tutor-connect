@@ -30,13 +30,23 @@ const router = express.Router();
  *       201: { description: Sessão criada }
  *       400: { description: Dados inválidos ou conflito de horário }
  */
-router.post("/create", authMiddleware, validate(createSessionSchema), asyncHandler(async (req, res) => {
-  const { tutorId, disciplina, data_hora_inicio, data_hora_fim, observacoes } = req.body;
-  const sessao = await sessionService.createSession(
-    req.userId, tutorId, disciplina, data_hora_inicio, data_hora_fim, observacoes,
-  );
-  res.status(201).json({ sessao });
-}));
+router.post(
+  "/create",
+  authMiddleware,
+  validate(createSessionSchema),
+  asyncHandler(async (req, res) => {
+    const { tutorId, disciplina, data_hora_inicio, data_hora_fim, observacoes } = req.body;
+    const sessao = await sessionService.createSession(
+      req.userId,
+      tutorId,
+      disciplina,
+      data_hora_inicio,
+      data_hora_fim,
+      observacoes,
+    );
+    res.status(201).json({ sessao });
+  }),
+);
 
 /**
  * @swagger
@@ -60,16 +70,20 @@ router.post("/create", authMiddleware, validate(createSessionSchema), asyncHandl
  *     responses:
  *       200: { description: Lista de sessões }
  */
-router.get("/minhas-sessoes", authMiddleware, asyncHandler(async (req, res) => {
-  const { status, tipo, page, limit } = req.query;
-  const result = await sessionService.getUserSessions(req.userId, {
-    status,
-    tipo,
-    page: page ? parseInt(page) : undefined,
-    limit: limit ? parseInt(limit) : undefined,
-  });
-  res.json(result.data);
-}));
+router.get(
+  "/minhas-sessoes",
+  authMiddleware,
+  asyncHandler(async (req, res) => {
+    const { status, tipo, page, limit } = req.query;
+    const result = await sessionService.getUserSessions(req.userId, {
+      status,
+      tipo,
+      page: page ? parseInt(page) : undefined,
+      limit: limit ? parseInt(limit) : undefined,
+    });
+    res.json(result.data);
+  }),
+);
 
 /**
  * @swagger
@@ -87,10 +101,14 @@ router.get("/minhas-sessoes", authMiddleware, asyncHandler(async (req, res) => {
  *       403: { description: Acesso negado }
  *       404: { description: Sessão não encontrada }
  */
-router.get("/:id", authMiddleware, asyncHandler(async (req, res) => {
-  const sessao = await sessionService.getSessionById(req.params.id, req.userId);
-  res.json(sessao);
-}));
+router.get(
+  "/:id",
+  authMiddleware,
+  asyncHandler(async (req, res) => {
+    const sessao = await sessionService.getSessionById(req.params.id, req.userId);
+    res.json(sessao);
+  }),
+);
 
 /**
  * @swagger
@@ -107,10 +125,14 @@ router.get("/:id", authMiddleware, asyncHandler(async (req, res) => {
  *       200: { description: Sessão confirmada }
  *       403: { description: Apenas o tutor pode confirmar }
  */
-router.put("/:id/confirmar", authMiddleware, asyncHandler(async (req, res) => {
-  const sessao = await sessionService.confirmSession(req.params.id, req.userId);
-  res.json({ sessao });
-}));
+router.put(
+  "/:id/confirmar",
+  authMiddleware,
+  asyncHandler(async (req, res) => {
+    const sessao = await sessionService.confirmSession(req.params.id, req.userId);
+    res.json({ sessao });
+  }),
+);
 
 /**
  * @swagger
@@ -126,10 +148,14 @@ router.put("/:id/confirmar", authMiddleware, asyncHandler(async (req, res) => {
  *     responses:
  *       200: { description: Sessão concluída }
  */
-router.put("/:id/concluir", authMiddleware, asyncHandler(async (req, res) => {
-  const sessao = await sessionService.completeSession(req.params.id, req.userId);
-  res.json({ sessao });
-}));
+router.put(
+  "/:id/concluir",
+  authMiddleware,
+  asyncHandler(async (req, res) => {
+    const sessao = await sessionService.completeSession(req.params.id, req.userId);
+    res.json({ sessao });
+  }),
+);
 
 /**
  * @swagger
@@ -152,11 +178,15 @@ router.put("/:id/concluir", authMiddleware, asyncHandler(async (req, res) => {
  *     responses:
  *       200: { description: Sessão cancelada }
  */
-router.put("/:id/cancelar", authMiddleware, asyncHandler(async (req, res) => {
-  const { motivo } = req.body;
-  const sessao = await sessionService.cancelSession(req.params.id, req.userId, motivo);
-  res.json({ sessao });
-}));
+router.put(
+  "/:id/cancelar",
+  authMiddleware,
+  asyncHandler(async (req, res) => {
+    const { motivo } = req.body;
+    const sessao = await sessionService.cancelSession(req.params.id, req.userId, motivo);
+    res.json({ sessao });
+  }),
+);
 
 /**
  * @swagger
@@ -179,11 +209,16 @@ router.put("/:id/cancelar", authMiddleware, asyncHandler(async (req, res) => {
  *       200: { description: Avaliação enviada }
  *       403: { description: Apenas o aluno pode avaliar }
  */
-router.post("/avaliar", authMiddleware, validate(ratingSchema), asyncHandler(async (req, res) => {
-  const { sessaoId, nota, comentario } = req.body;
-  const result = await ratingService.createRating(req.userId, sessaoId, nota, comentario);
-  res.json(result);
-}));
+router.post(
+  "/avaliar",
+  authMiddleware,
+  validate(ratingSchema),
+  asyncHandler(async (req, res) => {
+    const { sessaoId, nota, comentario } = req.body;
+    const result = await ratingService.createRating(req.userId, sessaoId, nota, comentario);
+    res.json(result);
+  }),
+);
 
 /**
  * @swagger
@@ -205,13 +240,17 @@ router.post("/avaliar", authMiddleware, validate(ratingSchema), asyncHandler(asy
  *     responses:
  *       200: { description: Lista de avaliações }
  */
-router.get("/avaliacoes/tutor/:tutorId", authMiddleware, asyncHandler(async (req, res) => {
-  const { page, limit } = req.query;
-  const result = await ratingService.getTutorRatings(req.params.tutorId, {
-    page: page ? parseInt(page) : undefined,
-    perPage: limit ? parseInt(limit) : undefined,
-  });
-  res.json(result.data);
-}));
+router.get(
+  "/avaliacoes/tutor/:tutorId",
+  authMiddleware,
+  asyncHandler(async (req, res) => {
+    const { page, limit } = req.query;
+    const result = await ratingService.getTutorRatings(req.params.tutorId, {
+      page: page ? parseInt(page) : undefined,
+      perPage: limit ? parseInt(limit) : undefined,
+    });
+    res.json(result.data);
+  }),
+);
 
 module.exports = router;

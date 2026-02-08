@@ -33,8 +33,10 @@ const userService = {
     if (data.bio !== undefined) updateData.bio = data.bio;
     if (data.localizacao !== undefined) updateData.localizacao = data.localizacao;
     if (data.isTutor !== undefined) updateData.isTutor = data.isTutor;
-    if (data.disciplinas_dominadas !== undefined) updateData.disciplinas_dominadas = data.disciplinas_dominadas;
-    if (data.disciplinas_precisa !== undefined) updateData.disciplinas_precisa = data.disciplinas_precisa;
+    if (data.disciplinas_dominadas !== undefined)
+      updateData.disciplinas_dominadas = data.disciplinas_dominadas;
+    if (data.disciplinas_precisa !== undefined)
+      updateData.disciplinas_precisa = data.disciplinas_precisa;
     if (data.disponibilidade !== undefined) updateData.disponibilidade = data.disponibilidade;
 
     if (data.isTutor === false) {

@@ -36,11 +36,16 @@ const STATE_TTL = 10 * 60 * 1000; // 10 minutos
  *       201: { description: Usuário criado com sucesso }
  *       400: { description: Dados inválidos ou email já cadastrado }
  */
-router.post("/register", authLimiter, validate(registerSchema), asyncHandler(async (req, res) => {
-  const { nome, email, senha } = req.body;
-  const result = await authService.register(nome, email, senha);
-  res.status(201).json(result);
-}));
+router.post(
+  "/register",
+  authLimiter,
+  validate(registerSchema),
+  asyncHandler(async (req, res) => {
+    const { nome, email, senha } = req.body;
+    const result = await authService.register(nome, email, senha);
+    res.status(201).json(result);
+  }),
+);
 
 /**
  * @swagger
@@ -63,11 +68,16 @@ router.post("/register", authLimiter, validate(registerSchema), asyncHandler(asy
  *       200: { description: Login bem-sucedido, retorna token JWT }
  *       401: { description: Credenciais inválidas }
  */
-router.post("/login", authLimiter, validate(loginSchema), asyncHandler(async (req, res) => {
-  const { email, senha } = req.body;
-  const result = await authService.login(email, senha);
-  res.json(result);
-}));
+router.post(
+  "/login",
+  authLimiter,
+  validate(loginSchema),
+  asyncHandler(async (req, res) => {
+    const { email, senha } = req.body;
+    const result = await authService.login(email, senha);
+    res.json(result);
+  }),
+);
 
 /**
  * @swagger
@@ -79,21 +89,24 @@ router.post("/login", authLimiter, validate(loginSchema), asyncHandler(async (re
  *     responses:
  *       302: { description: Redireciona para tela de login do Google }
  */
-router.get("/google", asyncHandler(async (req, res) => {
-  // Gerar state token para proteção CSRF
-  const state = crypto.randomBytes(32).toString("hex");
-  oauthStates.set(state, Date.now());
+router.get(
+  "/google",
+  asyncHandler(async (req, res) => {
+    // Gerar state token para proteção CSRF
+    const state = crypto.randomBytes(32).toString("hex");
+    oauthStates.set(state, Date.now());
 
-  // Limpar states expirados
-  for (const [key, timestamp] of oauthStates) {
-    if (Date.now() - timestamp > STATE_TTL) {
-      oauthStates.delete(key);
+    // Limpar states expirados
+    for (const [key, timestamp] of oauthStates) {
+      if (Date.now() - timestamp > STATE_TTL) {
+        oauthStates.delete(key);
+      }
     }
-  }
 
-  const url = authService.getGoogleAuthUrl(state);
-  res.redirect(url);
-}));
+    const url = authService.getGoogleAuthUrl(state);
+    res.redirect(url);
+  }),
+);
 
 /**
  * @swagger
@@ -109,39 +122,42 @@ router.get("/google", asyncHandler(async (req, res) => {
  *     responses:
  *       302: { description: Redireciona para o frontend com token }
  */
-router.get("/google/callback", asyncHandler(async (req, res) => {
-  const { code, error, state } = req.query;
+router.get(
+  "/google/callback",
+  asyncHandler(async (req, res) => {
+    const { code, error, state } = req.query;
 
-  if (error) {
-    return res.redirect(`${FRONTEND_URL}/login?error=${error}`);
-  }
+    if (error) {
+      return res.redirect(`${FRONTEND_URL}/login?error=${error}`);
+    }
 
-  // Validar state parameter (proteção CSRF)
-  if (!state || !oauthStates.has(state)) {
-    logger.warn("OAuth callback com state inválido ou ausente");
-    return res.redirect(`${FRONTEND_URL}/login?error=invalid_state`);
-  }
+    // Validar state parameter (proteção CSRF)
+    if (!state || !oauthStates.has(state)) {
+      logger.warn("OAuth callback com state inválido ou ausente");
+      return res.redirect(`${FRONTEND_URL}/login?error=invalid_state`);
+    }
 
-  const stateTimestamp = oauthStates.get(state);
-  oauthStates.delete(state);
+    const stateTimestamp = oauthStates.get(state);
+    oauthStates.delete(state);
 
-  if (Date.now() - stateTimestamp > STATE_TTL) {
-    logger.warn("OAuth callback com state expirado");
-    return res.redirect(`${FRONTEND_URL}/login?error=state_expired`);
-  }
+    if (Date.now() - stateTimestamp > STATE_TTL) {
+      logger.warn("OAuth callback com state expirado");
+      return res.redirect(`${FRONTEND_URL}/login?error=state_expired`);
+    }
 
-  if (!code) {
-    return res.redirect(`${FRONTEND_URL}/login?error=no_code`);
-  }
+    if (!code) {
+      return res.redirect(`${FRONTEND_URL}/login?error=no_code`);
+    }
 
-  try {
-    const { jwtToken, redirectPath } = await authService.googleCallback(code);
-    res.redirect(`${FRONTEND_URL}${redirectPath}?token=${jwtToken}`);
-  } catch (err) {
-    logger.error("Erro no callback OAuth:", { error: err.message });
-    res.redirect(`${FRONTEND_URL}/login?error=oauth_failed`);
-  }
-}));
+    try {
+      const { jwtToken, redirectPath } = await authService.googleCallback(code);
+      res.redirect(`${FRONTEND_URL}${redirectPath}?token=${jwtToken}`);
+    } catch (err) {
+      logger.error("Erro no callback OAuth:", { error: err.message });
+      res.redirect(`${FRONTEND_URL}/login?error=oauth_failed`);
+    }
+  }),
+);
 
 /**
  * @swagger
@@ -153,15 +169,18 @@ router.get("/google/callback", asyncHandler(async (req, res) => {
  *       200: { description: Token válido, retorna dados do usuário }
  *       401: { description: Token inválido }
  */
-router.get("/verify", asyncHandler(async (req, res) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  const result = await authService.verifyToken(token);
+router.get(
+  "/verify",
+  asyncHandler(async (req, res) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    const result = await authService.verifyToken(token);
 
-  if (!result.valid) {
-    return res.status(401).json({ valid: false });
-  }
+    if (!result.valid) {
+      return res.status(401).json({ valid: false });
+    }
 
-  res.json(result);
-}));
+    res.json(result);
+  }),
+);
 
 module.exports = router;

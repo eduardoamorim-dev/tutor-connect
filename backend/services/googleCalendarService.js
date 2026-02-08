@@ -47,7 +47,9 @@ const googleCalendarService = {
       const { encrypt } = require("../config/crypto");
       await userRepository.updateGoogleTokens(user._id, {
         access_token: encrypt(credentials.access_token),
-        refresh_token: credentials.refresh_token ? encrypt(credentials.refresh_token) : user.googleRefreshToken,
+        refresh_token: credentials.refresh_token
+          ? encrypt(credentials.refresh_token)
+          : user.googleRefreshToken,
         expiry_date: credentials.expiry_date,
       });
 
@@ -86,7 +88,9 @@ const googleCalendarService = {
         googleEventId: response.data.id,
         htmlLink: response.data.htmlLink,
         linkMeet: response.data.conferenceData?.entryPoints?.[0]?.uri,
-        conferenceStatus: response.data.conferenceData?.entryPoints?.[0]?.uri ? "success" : "failure",
+        conferenceStatus: response.data.conferenceData?.entryPoints?.[0]?.uri
+          ? "success"
+          : "failure",
       };
     } catch (error) {
       logger.error("Erro ao criar evento no Calendar:", { error: error.message });

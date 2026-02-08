@@ -29,7 +29,10 @@ const availabilityService = {
     const agora = new Date();
 
     if (dataHoraInicio < agora) {
-      throw new AppError("Não é possível adicionar disponibilidade para data/hora que já passou", 400);
+      throw new AppError(
+        "Não é possível adicionar disponibilidade para data/hora que já passou",
+        400,
+      );
     }
 
     if (dataHoraFim <= dataHoraInicio) {
@@ -142,9 +145,7 @@ const availabilityService = {
       throw new AppError("Usuário não encontrado", 404);
     }
 
-    const disponibilidadeIndex = user.disponibilidade.findIndex(
-      (d) => d._id.toString() === slotId,
-    );
+    const disponibilidadeIndex = user.disponibilidade.findIndex((d) => d._id.toString() === slotId);
 
     if (disponibilidadeIndex === -1) {
       throw new AppError("Disponibilidade não encontrada", 404);
@@ -165,7 +166,10 @@ const availabilityService = {
     const sessaoExistente = await sessaoRepository.findConflicting(userId, inicioSlot, fimSlot);
 
     if (sessaoExistente) {
-      throw new AppError("Não é possível remover esta disponibilidade pois há uma sessão agendada neste horário", 400);
+      throw new AppError(
+        "Não é possível remover esta disponibilidade pois há uma sessão agendada neste horário",
+        400,
+      );
     }
 
     user.disponibilidade.splice(disponibilidadeIndex, 1);

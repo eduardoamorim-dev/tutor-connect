@@ -46,10 +46,7 @@ const sessaoRepository = {
       q = q.skip(skip).limit(filters.limit);
     }
 
-    const [data, total] = await Promise.all([
-      q,
-      Sessao.countDocuments(query),
-    ]);
+    const [data, total] = await Promise.all([q, Sessao.countDocuments(query)]);
 
     return { data, total };
   },

@@ -123,10 +123,7 @@ const sessionService = {
       throw new AppError("Sessão não encontrada", 404);
     }
 
-    if (
-      sessao.tutor._id.toString() !== userId &&
-      sessao.aluno._id.toString() !== userId
-    ) {
+    if (sessao.tutor._id.toString() !== userId && sessao.aluno._id.toString() !== userId) {
       throw new AppError("Acesso negado", 403);
     }
 
@@ -164,10 +161,7 @@ const sessionService = {
       throw new AppError("Sessão não encontrada", 404);
     }
 
-    if (
-      sessao.tutor.toString() !== userId &&
-      sessao.aluno.toString() !== userId
-    ) {
+    if (sessao.tutor.toString() !== userId && sessao.aluno.toString() !== userId) {
       throw new AppError("Acesso negado", 403);
     }
 
@@ -197,10 +191,7 @@ const sessionService = {
       throw new AppError("Sessão não encontrada", 404);
     }
 
-    if (
-      sessao.tutor.toString() !== userId &&
-      sessao.aluno.toString() !== userId
-    ) {
+    if (sessao.tutor.toString() !== userId && sessao.aluno.toString() !== userId) {
       throw new AppError("Acesso negado", 403);
     }
 
@@ -224,8 +215,7 @@ const sessionService = {
     }
 
     const quemCancelou = await userRepository.findByIdFull(userId);
-    const destinatario =
-      sessao.tutor.toString() === userId ? sessao.aluno : sessao.tutor;
+    const destinatario = sessao.tutor.toString() === userId ? sessao.aluno : sessao.tutor;
 
     await notificarSessaoCancelada(sessao, userId, quemCancelou.nome, destinatario);
 

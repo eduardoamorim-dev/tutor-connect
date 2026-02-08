@@ -1,0 +1,9 @@
+process.env.NODE_ENV = "test";
+process.env.JWT_SECRET = "test-jwt-secret-key-for-testing";
+process.env.MONGO_URI = "mongodb://localhost:27017/test";
+process.env.GOOGLE_CLIENT_ID = "test-google-client-id";
+process.env.GOOGLE_CLIENT_SECRET = "test-google-client-secret";
+process.env.GOOGLE_REDIRECT_URI = "http://localhost:5001/auth/google/callback";
+process.env.FRONTEND_URL = "http://localhost:3000";
+process.env.CORS_ORIGIN = "http://localhost:3000";
+process.env.PORT = "5001";

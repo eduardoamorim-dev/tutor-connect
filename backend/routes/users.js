@@ -31,17 +31,21 @@ const router = express.Router();
  *     responses:
  *       200: { description: Lista de tutores }
  */
-router.get("/tutores", authMiddleware, asyncHandler(async (req, res) => {
-  const { disciplina, dia, page, limit } = req.query;
-  const result = await userService.getTutors({
-    disciplina,
-    dia,
-    excludeUserId: req.userId,
-    page: page ? parseInt(page) : undefined,
-    limit: limit ? parseInt(limit) : undefined,
-  });
-  res.json(result.data);
-}));
+router.get(
+  "/tutores",
+  authMiddleware,
+  asyncHandler(async (req, res) => {
+    const { disciplina, dia, page, limit } = req.query;
+    const result = await userService.getTutors({
+      disciplina,
+      dia,
+      excludeUserId: req.userId,
+      page: page ? parseInt(page) : undefined,
+      limit: limit ? parseInt(limit) : undefined,
+    });
+    res.json(result.data);
+  }),
+);
 
 /**
  * @swagger
@@ -58,10 +62,14 @@ router.get("/tutores", authMiddleware, asyncHandler(async (req, res) => {
  *       200: { description: Perfil do tutor com avaliações }
  *       404: { description: Tutor não encontrado }
  */
-router.get("/tutor/:id", authMiddleware, asyncHandler(async (req, res) => {
-  const result = await userService.getTutorProfile(req.params.id);
-  res.json(result);
-}));
+router.get(
+  "/tutor/:id",
+  authMiddleware,
+  asyncHandler(async (req, res) => {
+    const result = await userService.getTutorProfile(req.params.id);
+    res.json(result);
+  }),
+);
 
 /**
  * @swagger
@@ -72,10 +80,14 @@ router.get("/tutor/:id", authMiddleware, asyncHandler(async (req, res) => {
  *     responses:
  *       200: { description: Perfil do usuário }
  */
-router.get("/profile", authMiddleware, asyncHandler(async (req, res) => {
-  const user = await userService.getProfile(req.userId);
-  res.json(user);
-}));
+router.get(
+  "/profile",
+  authMiddleware,
+  asyncHandler(async (req, res) => {
+    const user = await userService.getProfile(req.userId);
+    res.json(user);
+  }),
+);
 
 /**
  * @swagger
@@ -97,10 +109,15 @@ router.get("/profile", authMiddleware, asyncHandler(async (req, res) => {
  *     responses:
  *       200: { description: Perfil atualizado }
  */
-router.put("/profile", authMiddleware, validate(profileUpdateSchema), asyncHandler(async (req, res) => {
-  const user = await userService.updateProfile(req.userId, req.body);
-  res.json(user);
-}));
+router.put(
+  "/profile",
+  authMiddleware,
+  validate(profileUpdateSchema),
+  asyncHandler(async (req, res) => {
+    const user = await userService.updateProfile(req.userId, req.body);
+    res.json(user);
+  }),
+);
 
 /**
  * @swagger
@@ -123,11 +140,16 @@ router.put("/profile", authMiddleware, validate(profileUpdateSchema), asyncHandl
  *       200: { description: Disponibilidade adicionada }
  *       400: { description: Conflito ou dados inválidos }
  */
-router.post("/disponibilidade", authMiddleware, validate(disponibilidadeSchema), asyncHandler(async (req, res) => {
-  const { data, horario_inicio, horario_fim } = req.body;
-  const result = await availabilityService.addSlot(req.userId, data, horario_inicio, horario_fim);
-  res.json(result);
-}));
+router.post(
+  "/disponibilidade",
+  authMiddleware,
+  validate(disponibilidadeSchema),
+  asyncHandler(async (req, res) => {
+    const { data, horario_inicio, horario_fim } = req.body;
+    const result = await availabilityService.addSlot(req.userId, data, horario_inicio, horario_fim);
+    res.json(result);
+  }),
+);
 
 /**
  * @swagger
@@ -143,10 +165,14 @@ router.post("/disponibilidade", authMiddleware, validate(disponibilidadeSchema),
  *     responses:
  *       200: { description: Lista de slots com status de agendamento }
  */
-router.get("/tutor/:id/disponibilidade", authMiddleware, asyncHandler(async (req, res) => {
-  const disponibilidades = await availabilityService.getAvailableSlots(req.params.id);
-  res.json(disponibilidades);
-}));
+router.get(
+  "/tutor/:id/disponibilidade",
+  authMiddleware,
+  asyncHandler(async (req, res) => {
+    const disponibilidades = await availabilityService.getAvailableSlots(req.params.id);
+    res.json(disponibilidades);
+  }),
+);
 
 /**
  * @swagger
@@ -163,10 +189,14 @@ router.get("/tutor/:id/disponibilidade", authMiddleware, asyncHandler(async (req
  *       200: { description: Disponibilidade removida }
  *       400: { description: Sessão agendada neste horário }
  */
-router.delete("/disponibilidade/:id", authMiddleware, asyncHandler(async (req, res) => {
-  const result = await availabilityService.removeSlot(req.userId, req.params.id);
-  res.json(result);
-}));
+router.delete(
+  "/disponibilidade/:id",
+  authMiddleware,
+  asyncHandler(async (req, res) => {
+    const result = await availabilityService.removeSlot(req.userId, req.params.id);
+    res.json(result);
+  }),
+);
 
 /**
  * @swagger
@@ -186,9 +216,12 @@ router.delete("/disponibilidade/:id", authMiddleware, asyncHandler(async (req, r
  *                 totalTutores: { type: integer }
  *                 totalAlunos: { type: integer }
  */
-router.get("/contagem", asyncHandler(async (req, res) => {
-  const counts = await userService.getUserCount();
-  res.json(counts);
-}));
+router.get(
+  "/contagem",
+  asyncHandler(async (req, res) => {
+    const counts = await userService.getUserCount();
+    res.json(counts);
+  }),
+);
 
 module.exports = router;

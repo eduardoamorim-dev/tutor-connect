@@ -6,7 +6,7 @@ const validate = (schema) => (req, res, next) => {
     next();
   } catch (error) {
     if (error instanceof ZodError) {
-      const messages = error.errors.map((e) => e.message).join(", ");
+      const messages = error.issues.map((e) => e.message).join(", ");
       return res.status(400).json({ error: messages });
     }
     next(error);

@@ -20,14 +20,18 @@ const router = express.Router();
  *     responses:
  *       200: { description: Lista de notificações }
  */
-router.get("/", authMiddleware, asyncHandler(async (req, res) => {
-  const { limit = 20, apenas_nao_lidas } = req.query;
-  const result = await notificationService.list(req.userId, {
-    limit: parseInt(limit),
-    apenasNaoLidas: apenas_nao_lidas === "true",
-  });
-  res.json(result.data);
-}));
+router.get(
+  "/",
+  authMiddleware,
+  asyncHandler(async (req, res) => {
+    const { limit = 20, apenas_nao_lidas } = req.query;
+    const result = await notificationService.list(req.userId, {
+      limit: parseInt(limit),
+      apenasNaoLidas: apenas_nao_lidas === "true",
+    });
+    res.json(result.data);
+  }),
+);
 
 /**
  * @swagger
@@ -44,10 +48,14 @@ router.get("/", authMiddleware, asyncHandler(async (req, res) => {
  *               properties:
  *                 count: { type: integer }
  */
-router.get("/count", authMiddleware, asyncHandler(async (req, res) => {
-  const result = await notificationService.countUnread(req.userId);
-  res.json(result);
-}));
+router.get(
+  "/count",
+  authMiddleware,
+  asyncHandler(async (req, res) => {
+    const result = await notificationService.countUnread(req.userId);
+    res.json(result);
+  }),
+);
 
 /**
  * @swagger
@@ -64,10 +72,14 @@ router.get("/count", authMiddleware, asyncHandler(async (req, res) => {
  *       200: { description: Notificação marcada como lida }
  *       404: { description: Notificação não encontrada }
  */
-router.put("/:id/ler", authMiddleware, asyncHandler(async (req, res) => {
-  const result = await notificationService.markAsRead(req.params.id, req.userId);
-  res.json(result);
-}));
+router.put(
+  "/:id/ler",
+  authMiddleware,
+  asyncHandler(async (req, res) => {
+    const result = await notificationService.markAsRead(req.params.id, req.userId);
+    res.json(result);
+  }),
+);
 
 /**
  * @swagger
@@ -78,10 +90,14 @@ router.put("/:id/ler", authMiddleware, asyncHandler(async (req, res) => {
  *     responses:
  *       200: { description: Todas marcadas como lidas }
  */
-router.put("/ler-todas", authMiddleware, asyncHandler(async (req, res) => {
-  const result = await notificationService.markAllAsRead(req.userId);
-  res.json(result);
-}));
+router.put(
+  "/ler-todas",
+  authMiddleware,
+  asyncHandler(async (req, res) => {
+    const result = await notificationService.markAllAsRead(req.userId);
+    res.json(result);
+  }),
+);
 
 /**
  * @swagger
@@ -98,10 +114,14 @@ router.put("/ler-todas", authMiddleware, asyncHandler(async (req, res) => {
  *       200: { description: Notificação removida }
  *       404: { description: Notificação não encontrada }
  */
-router.delete("/:id", authMiddleware, asyncHandler(async (req, res) => {
-  const result = await notificationService.deleteById(req.params.id, req.userId);
-  res.json(result);
-}));
+router.delete(
+  "/:id",
+  authMiddleware,
+  asyncHandler(async (req, res) => {
+    const result = await notificationService.deleteById(req.params.id, req.userId);
+    res.json(result);
+  }),
+);
 
 /**
  * @swagger
@@ -112,9 +132,13 @@ router.delete("/:id", authMiddleware, asyncHandler(async (req, res) => {
  *     responses:
  *       200: { description: Notificações lidas removidas }
  */
-router.delete("/", authMiddleware, asyncHandler(async (req, res) => {
-  const result = await notificationService.deleteAllRead(req.userId);
-  res.json(result);
-}));
+router.delete(
+  "/",
+  authMiddleware,
+  asyncHandler(async (req, res) => {
+    const result = await notificationService.deleteAllRead(req.userId);
+    res.json(result);
+  }),
+);
 
 module.exports = router;

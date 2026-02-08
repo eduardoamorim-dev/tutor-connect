@@ -1,9 +1,6 @@
 const logger = require("./logger");
 
-const REQUIRED_VARS = [
-  "MONGO_URI",
-  "JWT_SECRET",
-];
+const REQUIRED_VARS = ["MONGO_URI", "JWT_SECRET"];
 
 const OPTIONAL_VARS = [
   { name: "GOOGLE_CLIENT_ID", group: "Google OAuth" },
@@ -27,9 +24,7 @@ function validateEnv() {
   const googleDefined = googleVars.filter((v) => process.env[v.name]);
 
   if (googleDefined.length > 0 && googleDefined.length < googleVars.length) {
-    const googleMissing = googleVars
-      .filter((v) => !process.env[v.name])
-      .map((v) => v.name);
+    const googleMissing = googleVars.filter((v) => !process.env[v.name]).map((v) => v.name);
     logger.warn(`Google OAuth parcialmente configurado. Faltam: ${googleMissing.join(", ")}`);
   }
 

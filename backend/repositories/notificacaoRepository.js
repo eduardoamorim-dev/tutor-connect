@@ -31,10 +31,7 @@ const notificacaoRepository = {
       q = q.skip(skip).limit(filters.perPage);
     }
 
-    const [data, total] = await Promise.all([
-      q,
-      Notificacao.countDocuments(query),
-    ]);
+    const [data, total] = await Promise.all([q, Notificacao.countDocuments(query)]);
 
     return { data, total };
   },
@@ -52,10 +49,7 @@ const notificacaoRepository = {
   },
 
   async markAllAsRead(userId) {
-    return Notificacao.updateMany(
-      { usuario: userId, lida: false },
-      { lida: true },
-    );
+    return Notificacao.updateMany({ usuario: userId, lida: false }, { lida: true });
   },
 
   async deleteById(id, userId) {

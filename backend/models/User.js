@@ -43,12 +43,8 @@ const userSchema = new mongoose.Schema({
   total_avaliacoes: { type: Number, default: 0 },
   total_sessoes: { type: Number, default: 0 },
 
-  avaliacoes_recebidas: [
-    { type: mongoose.Schema.Types.ObjectId, ref: "Avaliacao" },
-  ],
-  sessoes_participadas: [
-    { type: mongoose.Schema.Types.ObjectId, ref: "Sessao" },
-  ],
+  avaliacoes_recebidas: [{ type: mongoose.Schema.Types.ObjectId, ref: "Avaliacao" }],
+  sessoes_participadas: [{ type: mongoose.Schema.Types.ObjectId, ref: "Sessao" }],
 
   googleAccessToken: { type: String },
   googleRefreshToken: { type: String },

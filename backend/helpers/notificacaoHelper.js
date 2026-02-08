@@ -2,13 +2,7 @@ const Notificacao = require("../models/Notificacao");
 const logger = require("../config/logger");
 
 // Helper para criar notificações
-const criarNotificacao = async (
-  usuario,
-  tipo,
-  titulo,
-  mensagem,
-  sessaoId = null,
-) => {
+const criarNotificacao = async (usuario, tipo, titulo, mensagem, sessaoId = null) => {
   try {
     const notificacao = new Notificacao({
       usuario,
@@ -27,15 +21,12 @@ const criarNotificacao = async (
 
 // Notificação: Sessão agendada (para o tutor)
 const notificarSessaoAgendada = async (sessao, nomeAluno) => {
-  const dataFormatada = new Date(sessao.data_hora_inicio).toLocaleDateString(
-    "pt-BR",
-    {
-      day: "2-digit",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    },
-  );
+  const dataFormatada = new Date(sessao.data_hora_inicio).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   return criarNotificacao(
     sessao.tutor,
@@ -48,15 +39,12 @@ const notificarSessaoAgendada = async (sessao, nomeAluno) => {
 
 // Notificação: Sessão confirmada (para o aluno)
 const notificarSessaoConfirmada = async (sessao, nomeTutor) => {
-  const dataFormatada = new Date(sessao.data_hora_inicio).toLocaleDateString(
-    "pt-BR",
-    {
-      day: "2-digit",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    },
-  );
+  const dataFormatada = new Date(sessao.data_hora_inicio).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   return criarNotificacao(
     sessao.aluno,
@@ -68,12 +56,7 @@ const notificarSessaoConfirmada = async (sessao, nomeTutor) => {
 };
 
 // Notificação: Sessão cancelada
-const notificarSessaoCancelada = async (
-  sessao,
-  canceladoPor,
-  nomeQuemCancelou,
-  destinatario,
-) => {
+const notificarSessaoCancelada = async (sessao, canceladoPor, nomeQuemCancelou, destinatario) => {
   return criarNotificacao(
     destinatario,
     "sessao_cancelada",
@@ -84,21 +67,13 @@ const notificarSessaoCancelada = async (
 };
 
 // Notificação: Cancelamento automático pelo sistema
-const notificarCancelamentoAutomatico = async (
-  sessao,
-  destinatario,
-  tipoUsuario,
-  nomeOutro,
-) => {
-  const dataFormatada = new Date(sessao.data_hora_inicio).toLocaleDateString(
-    "pt-BR",
-    {
-      day: "2-digit",
-      month: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    },
-  );
+const notificarCancelamentoAutomatico = async (sessao, destinatario, tipoUsuario, nomeOutro) => {
+  const dataFormatada = new Date(sessao.data_hora_inicio).toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   let mensagem;
   if (tipoUsuario === "tutor") {

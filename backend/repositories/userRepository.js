@@ -34,7 +34,8 @@ const userRepository = {
       query["disponibilidade.dia"] = filters.dia;
     }
 
-    const defaultSelect = "nome email bio disciplinas_dominadas disponibilidade localizacao rating total_avaliacoes total_sessoes";
+    const defaultSelect =
+      "nome email bio disciplinas_dominadas disponibilidade localizacao rating total_avaliacoes total_sessoes";
     let q = User.find(query, selectFields || defaultSelect).sort({ rating: -1, total_sessoes: -1 });
 
     if (filters.page && filters.limit) {
@@ -42,10 +43,7 @@ const userRepository = {
       q = q.skip(skip).limit(filters.limit);
     }
 
-    const [data, total] = await Promise.all([
-      q,
-      User.countDocuments(query),
-    ]);
+    const [data, total] = await Promise.all([q, User.countDocuments(query)]);
 
     return { data, total };
   },
@@ -57,8 +55,9 @@ const userRepository = {
   },
 
   async updateById(id, data) {
-    return User.findByIdAndUpdate(id, data, { new: true })
-      .select("-senha -googleAccessToken -googleRefreshToken");
+    return User.findByIdAndUpdate(id, data, { new: true }).select(
+      "-senha -googleAccessToken -googleRefreshToken",
+    );
   },
 
   async countByRole() {
@@ -81,9 +80,7 @@ const userRepository = {
     const user = await User.findById(userId);
     if (!user) return null;
 
-    const index = user.disponibilidade.findIndex(
-      (d) => d._id.toString() === slotId,
-    );
+    const index = user.disponibilidade.findIndex((d) => d._id.toString() === slotId);
     if (index === -1) return null;
 
     const removed = user.disponibilidade[index];

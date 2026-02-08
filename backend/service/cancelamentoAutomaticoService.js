@@ -15,7 +15,8 @@ const cancelarSessoesPendentesExpiradas = async () => {
     const sessoesExpiradas = await Sessao.find({
       status: "Pendente",
       data_hora_fim: { $lt: agora },
-    }).populate("tutor", "nome email googleAccessToken googleRefreshToken googleTokenExpiry")
+    })
+      .populate("tutor", "nome email googleAccessToken googleRefreshToken googleTokenExpiry")
       .populate("aluno", "nome email");
 
     if (sessoesExpiradas.length === 0) {
@@ -31,7 +32,8 @@ const cancelarSessoesPendentesExpiradas = async () => {
     for (const sessao of sessoesExpiradas) {
       try {
         sessao.status = "Cancelada";
-        sessao.motivo_cancelamento = "Cancelada automaticamente pelo sistema por falta de confirmação do tutor";
+        sessao.motivo_cancelamento =
+          "Cancelada automaticamente pelo sistema por falta de confirmação do tutor";
         sessao.cancelado_por = null;
         await sessao.save();
 
@@ -39,23 +41,13 @@ const cancelarSessoesPendentesExpiradas = async () => {
           await googleCalendarService.deleteEvent(sessao.tutor, sessao.googleEventId);
         }
 
-        await notificarCancelamentoAutomatico(
-          sessao,
-          sessao.tutor._id,
-          "tutor",
-          sessao.aluno.nome,
-        );
+        await notificarCancelamentoAutomatico(sessao, sessao.tutor._id, "tutor", sessao.aluno.nome);
 
-        await notificarCancelamentoAutomatico(
-          sessao,
-          sessao.aluno._id,
-          "aluno",
-          sessao.tutor.nome,
-        );
+        await notificarCancelamentoAutomatico(sessao, sessao.aluno._id, "aluno", sessao.tutor.nome);
 
         logger.info(
           `Sessão ${sessao._id} cancelada automaticamente (Disciplina: ${sessao.disciplina}, ` +
-          `Tutor: ${sessao.tutor.nome}, Aluno: ${sessao.aluno.nome})`,
+            `Tutor: ${sessao.tutor.nome}, Aluno: ${sessao.aluno.nome})`,
         );
 
         canceladasComSucesso++;
