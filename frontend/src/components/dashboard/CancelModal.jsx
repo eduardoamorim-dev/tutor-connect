@@ -2,13 +2,7 @@ import React, { useState } from "react";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Textarea } from "../ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "../ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../ui/dialog";
 import { Loader2 } from "lucide-react";
 
 function CancelModal({ open, onClose, onSubmit }) {
@@ -51,16 +45,8 @@ function CancelModal({ open, onClose, onSubmit }) {
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
             Voltar
           </Button>
-          <Button
-            variant="destructive"
-            onClick={handleSubmit}
-            disabled={loading}
-          >
-            {loading ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              "Confirmar"
-            )}
+          <Button variant="destructive" onClick={handleSubmit} disabled={loading}>
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Confirmar"}
           </Button>
         </DialogFooter>
       </DialogContent>

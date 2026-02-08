@@ -17,14 +17,7 @@ import ProfileSetup from "./components/ProfileSetup";
 import Profile from "./components/Profile";
 import Notifications from "./components/Notifications";
 import { Avatar, AvatarFallback } from "./components/ui/avatar";
-import {
-  LayoutDashboard,
-  User,
-  LogOut,
-  Menu,
-  X,
-  GraduationCap,
-} from "lucide-react";
+import { LayoutDashboard, User, LogOut, Menu, X, GraduationCap } from "lucide-react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import "./index.css";
 
@@ -150,9 +143,7 @@ function Navbar() {
                   <p className="text-sm font-semibold text-gray-900 leading-tight">
                     {user?.nome?.split(" ")[0]}
                   </p>
-                  <p className="text-xs text-gray-500">
-                    {user?.isTutor ? "Tutor" : "Aluno"}
-                  </p>
+                  <p className="text-xs text-gray-500">{user?.isTutor ? "Tutor" : "Aluno"}</p>
                 </div>
                 <Avatar className="h-9 w-9 ring-2 ring-violet-100">
                   <AvatarFallback className="bg-gradient-to-br from-violet-500 to-indigo-500 text-white text-sm font-medium">
@@ -173,11 +164,7 @@ function Navbar() {
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
               >
-                {mobileMenuOpen ? (
-                  <X className="w-6 h-6" />
-                ) : (
-                  <Menu className="w-6 h-6" />
-                )}
+                {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
             </div>
           </div>
@@ -199,9 +186,7 @@ function Navbar() {
               </Avatar>
               <div>
                 <p className="font-semibold text-gray-900">{user?.nome}</p>
-                <p className="text-sm text-violet-600">
-                  {user?.isTutor ? "Tutor" : "Aluno"}
-                </p>
+                <p className="text-sm text-violet-600">{user?.isTutor ? "Tutor" : "Aluno"}</p>
               </div>
             </div>
 
@@ -273,10 +258,7 @@ function AppRoutes() {
       {showNavbar && <Navbar />}
 
       <Routes>
-        <Route
-          path="/login"
-          element={token ? <Navigate to="/dashboard" /> : <Login />}
-        />
+        <Route path="/login" element={token ? <Navigate to="/dashboard" /> : <Login />} />
 
         <Route
           path="/setup-profile"
@@ -320,10 +302,7 @@ function AppRoutes() {
           }
         />
 
-        <Route
-          path="/"
-          element={<Navigate to={token ? "/dashboard" : "/login"} />}
-        />
+        <Route path="/" element={<Navigate to={token ? "/dashboard" : "/login"} />} />
       </Routes>
     </div>
   );

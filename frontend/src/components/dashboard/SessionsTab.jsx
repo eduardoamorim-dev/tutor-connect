@@ -4,15 +4,7 @@ import { Button } from "../ui/button";
 import { Calendar, Search } from "lucide-react";
 import SessionCard from "./SessionCard";
 
-function SessionsTab({
-  sessoes,
-  userId,
-  onConfirm,
-  onComplete,
-  onCancel,
-  onRate,
-  onGoToTutores,
-}) {
+function SessionsTab({ sessoes, userId, onConfirm, onComplete, onCancel, onRate, onGoToTutores }) {
   const [filtroStatus, setFiltroStatus] = useState("ativas");
   const [isChangingFilter, setIsChangingFilter] = useState(false);
 
@@ -158,10 +150,7 @@ function SessionsTab({
                 </Button>
               )}
               {sessoes.length === 0 && (
-                <Button
-                  onClick={onGoToTutores}
-                  className="mt-4 bg-violet-600" 
-                >
+                <Button onClick={onGoToTutores} className="mt-4 bg-violet-600">
                   <Search className="w-4 h-4 mr-2" />
                   Buscar Tutores
                 </Button>

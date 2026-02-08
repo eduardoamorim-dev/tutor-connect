@@ -46,9 +46,7 @@ export function useTutors() {
 
       const matchDisciplina =
         selectedDisciplina === "all" ||
-        tutor.disciplinas_dominadas?.some(
-          (d) => d.disciplina === selectedDisciplina,
-        );
+        tutor.disciplinas_dominadas?.some((d) => d.disciplina === selectedDisciplina);
 
       return matchSearch && matchDisciplina;
     });
@@ -56,11 +54,7 @@ export function useTutors() {
 
   const allDisciplinas = useMemo(() => {
     return [
-      ...new Set(
-        tutores.flatMap((t) =>
-          t.disciplinas_dominadas.map((d) => d.disciplina),
-        ),
-      ),
+      ...new Set(tutores.flatMap((t) => t.disciplinas_dominadas.map((d) => d.disciplina))),
     ].sort();
   }, [tutores]);
 

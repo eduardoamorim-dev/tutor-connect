@@ -53,9 +53,7 @@ function RateModal({ open, onClose, onSubmit }) {
                   onClick={() => setNota(n)}
                   className={`p-2 ${nota >= n ? "text-yellow-400" : "text-gray-300"}`}
                 >
-                  <Star
-                    className={`w-8 h-8 ${nota >= n ? "fill-current" : ""}`}
-                  />
+                  <Star className={`w-8 h-8 ${nota >= n ? "fill-current" : ""}`} />
                 </button>
               ))}
             </div>
@@ -74,11 +72,7 @@ function RateModal({ open, onClose, onSubmit }) {
           <Button variant="outline" onClick={() => handleOpenChange(false)}>
             Cancelar
           </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="bg-violet-600"
-          >
+          <Button onClick={handleSubmit} disabled={loading} className="bg-violet-600">
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Enviar"}
           </Button>
         </DialogFooter>

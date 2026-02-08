@@ -5,10 +5,7 @@ import notificacoesApi from "../api/services/notificacoesApi";
 export function useNotifications() {
   const queryClient = useQueryClient();
 
-  const {
-    data: count = 0,
-    refetch: refetchCount,
-  } = useQuery({
+  const { data: count = 0, refetch: refetchCount } = useQuery({
     queryKey: ["notificacoes-count"],
     queryFn: async () => {
       const res = await notificacoesApi.count();
@@ -41,9 +38,7 @@ export function useNotifications() {
       queryClient.setQueryData(["notificacoes"], (prev) =>
         prev?.map((n) => (n._id === id ? { ...n, lida: true } : n)),
       );
-      queryClient.setQueryData(["notificacoes-count"], (prev) =>
-        Math.max(0, (prev || 0) - 1),
-      );
+      queryClient.setQueryData(["notificacoes-count"], (prev) => Math.max(0, (prev || 0) - 1));
     },
   });
 
@@ -63,9 +58,7 @@ export function useNotifications() {
       queryClient.setQueryData(["notificacoes"], (prev) => {
         const notif = prev?.find((n) => n._id === id);
         if (notif && !notif.lida) {
-          queryClient.setQueryData(["notificacoes-count"], (c) =>
-            Math.max(0, (c || 0) - 1),
-          );
+          queryClient.setQueryData(["notificacoes-count"], (c) => Math.max(0, (c || 0) - 1));
         }
         return prev?.filter((n) => n._id !== id);
       });
@@ -75,31 +68,17 @@ export function useNotifications() {
   const clearReadMutation = useMutation({
     mutationFn: () => notificacoesApi.deleteAllRead(),
     onSuccess: () => {
-      queryClient.setQueryData(["notificacoes"], (prev) =>
-        prev?.filter((n) => !n.lida),
-      );
+      queryClient.setQueryData(["notificacoes"], (prev) => prev?.filter((n) => !n.lida));
     },
   });
 
-  const markAsRead = useCallback(
-    (id) => markReadMutation.mutate(id),
-    [markReadMutation],
-  );
+  const markAsRead = useCallback((id) => markReadMutation.mutate(id), [markReadMutation]);
 
-  const markAllAsRead = useCallback(
-    () => markAllReadMutation.mutate(),
-    [markAllReadMutation],
-  );
+  const markAllAsRead = useCallback(() => markAllReadMutation.mutate(), [markAllReadMutation]);
 
-  const deleteNotification = useCallback(
-    (id) => deleteMutation.mutate(id),
-    [deleteMutation],
-  );
+  const deleteNotification = useCallback((id) => deleteMutation.mutate(id), [deleteMutation]);
 
-  const clearRead = useCallback(
-    () => clearReadMutation.mutate(),
-    [clearReadMutation],
-  );
+  const clearRead = useCallback(() => clearReadMutation.mutate(), [clearReadMutation]);
 
   return {
     notificacoes,

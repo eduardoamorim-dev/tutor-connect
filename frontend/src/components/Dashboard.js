@@ -267,11 +267,7 @@ function Dashboard() {
         onSubmit={handleAgendar}
       />
 
-      <RateModal
-        open={showAvaliacao}
-        onClose={setShowAvaliacao}
-        onSubmit={handleAvaliar}
-      />
+      <RateModal open={showAvaliacao} onClose={setShowAvaliacao} onSubmit={handleAvaliar} />
 
       <CancelModal
         open={showCancelamento}

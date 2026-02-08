@@ -1,25 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import usersApi from "../api/services/usersApi";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "./ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import { Badge } from "./ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import {
   Plus,
   X,
@@ -105,8 +93,7 @@ function ProfileSetup({ onComplete }) {
     if (!novaDisciplinaDomina.trim()) return;
     if (
       formData.disciplinas_dominadas.some(
-        (d) =>
-          d.disciplina.toLowerCase() === novaDisciplinaDomina.toLowerCase(),
+        (d) => d.disciplina.toLowerCase() === novaDisciplinaDomina.toLowerCase(),
       )
     ) {
       toast.error("Já adicionada");
@@ -126,8 +113,7 @@ function ProfileSetup({ onComplete }) {
     if (!novaDisciplinaPrecisa.trim()) return;
     if (
       formData.disciplinas_precisa.some(
-        (d) =>
-          d.disciplina.toLowerCase() === novaDisciplinaPrecisa.toLowerCase(),
+        (d) => d.disciplina.toLowerCase() === novaDisciplinaPrecisa.toLowerCase(),
       )
     ) {
       toast.error("Já adicionada");
@@ -170,8 +156,7 @@ function ProfileSetup({ onComplete }) {
   const canProceed = () => {
     if (step === 1) return true;
     if (step === 2) return formData.disciplinas_precisa.length > 0;
-    if (step === 3 && formData.isTutor)
-      return formData.disciplinas_dominadas.length > 0;
+    if (step === 3 && formData.isTutor) return formData.disciplinas_dominadas.length > 0;
     return true;
   };
 
@@ -189,9 +174,7 @@ function ProfileSetup({ onComplete }) {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-2xl mb-4">
             <Sparkles className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Complete seu Perfil
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Complete seu Perfil</h1>
           <p className="text-gray-600">Configure seu perfil para começar</p>
         </div>
 
@@ -204,9 +187,7 @@ function ProfileSetup({ onComplete }) {
                 {step > s ? <Check className="w-5 h-5" /> : s}
               </div>
               {s < getTotalSteps() && (
-                <div
-                  className={`w-12 h-1 ${step > s ? "bg-violet-600" : "bg-gray-200"}`}
-                />
+                <div className={`w-12 h-1 ${step > s ? "bg-violet-600" : "bg-gray-200"}`} />
               )}
             </React.Fragment>
           ))}
@@ -220,12 +201,9 @@ function ProfileSetup({ onComplete }) {
               {step === 3 && formData.isTutor && "O que você pode ensinar?"}
             </CardTitle>
             <CardDescription>
-              {step === 1 &&
-                "Escolha se quer apenas aprender ou também ensinar"}
+              {step === 1 && "Escolha se quer apenas aprender ou também ensinar"}
               {step === 2 && "Adicione disciplinas que você precisa de ajuda"}
-              {step === 3 &&
-                formData.isTutor &&
-                "Adicione disciplinas que você domina"}
+              {step === 3 && formData.isTutor && "Adicione disciplinas que você domina"}
             </CardDescription>
           </CardHeader>
 
@@ -244,16 +222,10 @@ function ProfileSetup({ onComplete }) {
                         <BookOpen className="w-6 h-6" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 mb-1">
-                          Quero aprender
-                        </h3>
-                        <p className="text-sm text-gray-600">
-                          Encontre tutores para aprender
-                        </p>
+                        <h3 className="font-semibold text-gray-900 mb-1">Quero aprender</h3>
+                        <p className="text-sm text-gray-600">Encontre tutores para aprender</p>
                       </div>
-                      {!formData.isTutor && (
-                        <Check className="w-6 h-6 text-violet-600" />
-                      )}
+                      {!formData.isTutor && <Check className="w-6 h-6 text-violet-600" />}
                     </div>
                   </button>
                   <button
@@ -274,9 +246,7 @@ function ProfileSetup({ onComplete }) {
                           Compartilhe conhecimento ajudando outros
                         </p>
                       </div>
-                      {formData.isTutor && (
-                        <Check className="w-6 h-6 text-violet-600" />
-                      )}
+                      {formData.isTutor && <Check className="w-6 h-6 text-violet-600" />}
                     </div>
                   </button>
                 </div>
@@ -302,9 +272,7 @@ function ProfileSetup({ onComplete }) {
                     <Textarea
                       placeholder="Sobre você..."
                       value={formData.bio}
-                      onChange={(e) =>
-                        setFormData({ ...formData, bio: e.target.value })
-                      }
+                      onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                       rows={3}
                       maxLength={500}
                     />
@@ -316,10 +284,7 @@ function ProfileSetup({ onComplete }) {
             {step === 2 && (
               <div className="space-y-4">
                 <div className="flex gap-2">
-                  <Select
-                    value={novaDisciplinaPrecisa}
-                    onValueChange={setNovaDisciplinaPrecisa}
-                  >
+                  <Select value={novaDisciplinaPrecisa} onValueChange={setNovaDisciplinaPrecisa}>
                     <SelectTrigger className="flex-1">
                       <SelectValue placeholder="Selecione" />
                     </SelectTrigger>
@@ -355,26 +320,20 @@ function ProfileSetup({ onComplete }) {
                   placeholder="Ou digite uma disciplina"
                   value={novaDisciplinaPrecisa}
                   onChange={(e) => setNovaDisciplinaPrecisa(e.target.value)}
-                  onKeyPress={(e) =>
-                    e.key === "Enter" && adicionarDisciplinaPrecisa()
-                  }
+                  onKeyPress={(e) => e.key === "Enter" && adicionarDisciplinaPrecisa()}
                 />
                 <div className="flex flex-wrap gap-2 min-h-[80px] p-4 border rounded-xl bg-gray-50">
                   {formData.disciplinas_precisa.length > 0 ? (
                     formData.disciplinas_precisa.map((d, i) => (
-                      <Badge
-                        key={i}
-                        className="bg-indigo-100 text-indigo-700 pr-1 py-1.5"
-                      >
+                      <Badge key={i} className="bg-indigo-100 text-indigo-700 pr-1 py-1.5">
                         {d.disciplina} • {d.nivel_desejado}
                         <button
                           onClick={() =>
                             setFormData({
                               ...formData,
-                              disciplinas_precisa:
-                                formData.disciplinas_precisa.filter(
-                                  (_, idx) => idx !== i,
-                                ),
+                              disciplinas_precisa: formData.disciplinas_precisa.filter(
+                                (_, idx) => idx !== i,
+                              ),
                             })
                           }
                           className="ml-2"
@@ -384,9 +343,7 @@ function ProfileSetup({ onComplete }) {
                       </Badge>
                     ))
                   ) : (
-                    <p className="text-gray-400 text-sm">
-                      Adicione pelo menos uma
-                    </p>
+                    <p className="text-gray-400 text-sm">Adicione pelo menos uma</p>
                   )}
                 </div>
               </div>
@@ -398,16 +355,12 @@ function ProfileSetup({ onComplete }) {
                   <div className="flex items-center gap-3">
                     <GraduationCap className="w-5 h-5 text-violet-600" />
                     <p className="text-sm text-violet-700">
-                      Adicione disciplinas que você tem conhecimento para
-                      ensinar
+                      Adicione disciplinas que você tem conhecimento para ensinar
                     </p>
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <Select
-                    value={novaDisciplinaDomina}
-                    onValueChange={setNovaDisciplinaDomina}
-                  >
+                  <Select value={novaDisciplinaDomina} onValueChange={setNovaDisciplinaDomina}>
                     <SelectTrigger className="flex-1">
                       <SelectValue placeholder="Selecione" />
                     </SelectTrigger>
@@ -431,11 +384,7 @@ function ProfileSetup({ onComplete }) {
                       ))}
                     </SelectContent>
                   </Select>
-                  <Button
-                    onClick={adicionarDisciplinaDomina}
-                    size="icon"
-                    className="bg-violet-600"
-                  >
+                  <Button onClick={adicionarDisciplinaDomina} size="icon" className="bg-violet-600">
                     <Plus className="w-4 h-4" />
                   </Button>
                 </div>
@@ -443,26 +392,20 @@ function ProfileSetup({ onComplete }) {
                   placeholder="Ou digite uma disciplina"
                   value={novaDisciplinaDomina}
                   onChange={(e) => setNovaDisciplinaDomina(e.target.value)}
-                  onKeyPress={(e) =>
-                    e.key === "Enter" && adicionarDisciplinaDomina()
-                  }
+                  onKeyPress={(e) => e.key === "Enter" && adicionarDisciplinaDomina()}
                 />
                 <div className="flex flex-wrap gap-2 min-h-[80px] p-4 border rounded-xl bg-gray-50">
                   {formData.disciplinas_dominadas.length > 0 ? (
                     formData.disciplinas_dominadas.map((d, i) => (
-                      <Badge
-                        key={i}
-                        className="bg-violet-100 text-violet-700 pr-1 py-1.5"
-                      >
+                      <Badge key={i} className="bg-violet-100 text-violet-700 pr-1 py-1.5">
                         {d.disciplina} • {d.nivel}
                         <button
                           onClick={() =>
                             setFormData({
                               ...formData,
-                              disciplinas_dominadas:
-                                formData.disciplinas_dominadas.filter(
-                                  (_, idx) => idx !== i,
-                                ),
+                              disciplinas_dominadas: formData.disciplinas_dominadas.filter(
+                                (_, idx) => idx !== i,
+                              ),
                             })
                           }
                           className="ml-2"
@@ -472,14 +415,12 @@ function ProfileSetup({ onComplete }) {
                       </Badge>
                     ))
                   ) : (
-                    <p className="text-gray-400 text-sm">
-                      Adicione pelo menos uma
-                    </p>
+                    <p className="text-gray-400 text-sm">Adicione pelo menos uma</p>
                   )}
                 </div>
                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-700">
-                  <strong>Dica:</strong> Após concluir, vá em "Meu Perfil" para
-                  adicionar suas datas e horários disponíveis para tutorias.
+                  <strong>Dica:</strong> Após concluir, vá em "Meu Perfil" para adicionar suas datas
+                  e horários disponíveis para tutorias.
                 </div>
               </div>
             )}

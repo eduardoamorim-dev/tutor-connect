@@ -23,9 +23,7 @@ const getNotificationIcon = (tipo) => {
     sessao_cancelada: <XCircle className="w-4 h-4 text-red-500" />,
     sessao_concluida: <Check className="w-4 h-4 text-violet-500" />,
     avaliacao_pendente: <Star className="w-4 h-4 text-yellow-500" />,
-    avaliacao_recebida: (
-      <Star className="w-4 h-4 text-yellow-500 fill-yellow-400" />
-    ),
+    avaliacao_recebida: <Star className="w-4 h-4 text-yellow-500 fill-yellow-400" />,
     lembrete_sessao: <Clock className="w-4 h-4 text-orange-500" />,
   };
   return icons[tipo] || <Bell className="w-4 h-4 text-gray-500" />;
@@ -123,9 +121,7 @@ function Notifications() {
   const marcarComoLida = async (id) => {
     try {
       await notificacoesApi.markRead(id);
-      setNotificacoes((prev) =>
-        prev.map((n) => (n._id === id ? { ...n, lida: true } : n)),
-      );
+      setNotificacoes((prev) => prev.map((n) => (n._id === id ? { ...n, lida: true } : n)));
       setCount((prev) => Math.max(0, prev - 1));
     } catch (error) {
       console.error("Erro ao marcar como lida:", error);
@@ -291,18 +287,14 @@ function Notifications() {
                             </span>
                           </div>
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {notificacao.mensagem}
-                        </p>
+                        <p className="text-xs text-gray-500 mt-1">{notificacao.mensagem}</p>
                         <div className="flex items-center justify-between mt-2">
                           <span className="text-xs text-violet-600 font-medium flex items-center gap-1">
                             {getActionText(notificacao.tipo)}
                             <ExternalLink className="w-3 h-3" />
                           </span>
                           <button
-                            onClick={(e) =>
-                              deletarNotificacao(notificacao._id, e)
-                            }
+                            onClick={(e) => deletarNotificacao(notificacao._id, e)}
                             className="p-1 hover:bg-gray-200 rounded transition-colors"
                           >
                             <Trash2 className="w-3 h-3 text-gray-400 hover:text-red-500" />

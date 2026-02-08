@@ -33,15 +33,10 @@ function TutorCard({ tutor, onViewProfile, onSchedule, index = 0 }) {
                 className="flex items-center justify-center gap-1 mt-2 hover:bg-gray-100 px-2 py-1 rounded-lg transition-colors"
               >
                 <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                <span className="font-medium">
-                  {tutor.rating.toFixed(1)}
-                </span>
+                <span className="font-medium">{tutor.rating.toFixed(1)}</span>
                 <span className="text-gray-400 text-sm">
                   ({tutor.total_avaliacoes}{" "}
-                  {tutor.total_avaliacoes === 1
-                    ? "avaliacao"
-                    : "avaliacoes"}
-                  )
+                  {tutor.total_avaliacoes === 1 ? "avaliacao" : "avaliacoes"})
                 </span>
               </button>
             )}
@@ -55,18 +50,12 @@ function TutorCard({ tutor, onViewProfile, onSchedule, index = 0 }) {
                 </Badge>
               ))}
               {tutor.disciplinas_dominadas.length > 3 && (
-                <Badge variant="outline">
-                  +{tutor.disciplinas_dominadas.length - 3}
-                </Badge>
+                <Badge variant="outline">+{tutor.disciplinas_dominadas.length - 3}</Badge>
               )}
             </div>
           </div>
           <div className="w-full flex gap-2">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={() => onViewProfile(tutor)}
-            >
+            <Button variant="outline" className="flex-1" onClick={() => onViewProfile(tutor)}>
               <Eye className="w-4 h-4 mr-2" />
               Ver Perfil
             </Button>

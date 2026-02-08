@@ -15,9 +15,7 @@ export const formatDate = (date) =>
 
 export const formatDateFull = (date) => {
   const dateStr =
-    typeof date === "string" && date.match(/^\d{4}-\d{2}-\d{2}$/)
-      ? date + "T12:00:00"
-      : date;
+    typeof date === "string" && date.match(/^\d{4}-\d{2}-\d{2}$/) ? date + "T12:00:00" : date;
   return new Date(dateStr).toLocaleDateString("pt-BR", {
     weekday: "long",
     day: "2-digit",
@@ -35,6 +33,6 @@ export const getStatusColor = (s) =>
   ({
     Pendente: "bg-yellow-100 text-yellow-700",
     Confirmada: "bg-green-100 text-green-700",
-    "Concluída": "bg-blue-100 text-blue-700",
+    Concluída: "bg-blue-100 text-blue-700",
     Cancelada: "bg-red-100 text-red-700",
   })[s] || "bg-gray-100";

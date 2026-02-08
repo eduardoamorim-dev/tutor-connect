@@ -33,9 +33,7 @@ class ErrorBoundary extends React.Component {
             </div>
 
             <div className="space-y-2">
-              <h1 className="text-2xl font-bold text-gray-900">
-                Algo deu errado
-              </h1>
+              <h1 className="text-2xl font-bold text-gray-900">Algo deu errado</h1>
               <p className="text-gray-500">
                 Ocorreu um erro inesperado. Tente recarregar a página.
               </p>

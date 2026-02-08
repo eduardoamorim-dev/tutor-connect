@@ -9,13 +9,7 @@ import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import { Badge } from "./ui/badge";
 import { Avatar, AvatarFallback } from "./ui/avatar";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import {
   Plus,
   X,
@@ -134,9 +128,7 @@ function Profile() {
     // Adiciona T12:00:00 para evitar problemas de timezone
     const date = new Date(dateStr);
     // Ajusta para timezone local
-    const localDate = new Date(
-      date.getTime() + date.getTimezoneOffset() * 60000,
-    );
+    const localDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
     return localDate.toLocaleDateString("pt-BR", {
       weekday: "short",
       day: "2-digit",
@@ -148,8 +140,7 @@ function Profile() {
   const adicionarDisciplinaDomina = () => {
     if (novaDisciplinaDomina.trim()) {
       const existe = formData.disciplinas_dominadas.some(
-        (d) =>
-          d.disciplina.toLowerCase() === novaDisciplinaDomina.toLowerCase(),
+        (d) => d.disciplina.toLowerCase() === novaDisciplinaDomina.toLowerCase(),
       );
       if (existe) {
         toast.error("Disciplina já adicionada");
@@ -169,17 +160,14 @@ function Profile() {
   const removerDisciplinaDomina = (index) => {
     setFormData({
       ...formData,
-      disciplinas_dominadas: formData.disciplinas_dominadas.filter(
-        (_, i) => i !== index,
-      ),
+      disciplinas_dominadas: formData.disciplinas_dominadas.filter((_, i) => i !== index),
     });
   };
 
   const adicionarDisciplinaPrecisa = () => {
     if (novaDisciplinaPrecisa.trim()) {
       const existe = formData.disciplinas_precisa.some(
-        (d) =>
-          d.disciplina.toLowerCase() === novaDisciplinaPrecisa.toLowerCase(),
+        (d) => d.disciplina.toLowerCase() === novaDisciplinaPrecisa.toLowerCase(),
       );
       if (existe) {
         toast.error("Disciplina já adicionada");
@@ -199,9 +187,7 @@ function Profile() {
   const removerDisciplinaPrecisa = (index) => {
     setFormData({
       ...formData,
-      disciplinas_precisa: formData.disciplinas_precisa.filter(
-        (_, i) => i !== index,
-      ),
+      disciplinas_precisa: formData.disciplinas_precisa.filter((_, i) => i !== index),
     });
   };
 
@@ -280,37 +266,34 @@ function Profile() {
 
   const agora = new Date();
 
-  const disponibilidadesPorData = formData.disponibilidade.reduce(
-    (acc, disp) => {
-      // Usar UTC para extrair a data (consistente com como salvamos)
-      const date = new Date(disp.data);
-      const year = date.getUTCFullYear();
-      const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-      const day = String(date.getUTCDate()).padStart(2, "0");
+  const disponibilidadesPorData = formData.disponibilidade.reduce((acc, disp) => {
+    // Usar UTC para extrair a data (consistente com como salvamos)
+    const date = new Date(disp.data);
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(date.getUTCDate()).padStart(2, "0");
 
-      // Verificar se o horário já passou
-      const [horaFim, minFim] = disp.horario_fim.split(":").map(Number);
-      const dataHoraFim = new Date(
-        year,
-        date.getUTCMonth(),
-        date.getUTCDate(),
-        horaFim,
-        minFim,
-        0,
-        0,
-      );
+    // Verificar se o horário já passou
+    const [horaFim, minFim] = disp.horario_fim.split(":").map(Number);
+    const dataHoraFim = new Date(
+      year,
+      date.getUTCMonth(),
+      date.getUTCDate(),
+      horaFim,
+      minFim,
+      0,
+      0,
+    );
 
-      // Só adiciona se ainda não passou
-      if (dataHoraFim > agora) {
-        const dataKey = `${year}-${month}-${day}`;
-        if (!acc[dataKey]) acc[dataKey] = [];
-        acc[dataKey].push(disp);
-      }
+    // Só adiciona se ainda não passou
+    if (dataHoraFim > agora) {
+      const dataKey = `${year}-${month}-${day}`;
+      if (!acc[dataKey]) acc[dataKey] = [];
+      acc[dataKey].push(disp);
+    }
 
-      return acc;
-    },
-    {},
-  );
+    return acc;
+  }, {});
 
   const datasOrdenadas = Object.keys(disponibilidadesPorData).sort();
   const hoje = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, "0")}-${String(agora.getDate()).padStart(2, "0")}`;
@@ -327,9 +310,7 @@ function Profile() {
     <div className="container mx-auto px-6 py-8 max-w-4xl">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Meu Perfil</h1>
-        <p className="text-gray-600">
-          Gerencie suas informações e preferências
-        </p>
+        <p className="text-gray-600">Gerencie suas informações e preferências</p>
       </div>
 
       <Card className="mb-6">
@@ -346,9 +327,7 @@ function Profile() {
               <div className="flex items-center gap-4 mt-3">
                 <Badge
                   className={
-                    formData.isTutor
-                      ? "bg-violet-100 text-violet-700"
-                      : "bg-gray-100 text-gray-700"
+                    formData.isTutor ? "bg-violet-100 text-violet-700" : "bg-gray-100 text-gray-700"
                   }
                 >
                   {formData.isTutor ? "Tutor" : "Aluno"}
@@ -356,12 +335,8 @@ function Profile() {
                 {formData.isTutor && stats.rating > 0 && (
                   <div className="flex items-center gap-1">
                     <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    <span className="font-medium">
-                      {stats.rating.toFixed(1)}
-                    </span>
-                    <span className="text-gray-400 text-sm">
-                      ({stats.totalAvaliacoes})
-                    </span>
+                    <span className="font-medium">{stats.rating.toFixed(1)}</span>
+                    <span className="text-gray-400 text-sm">({stats.totalAvaliacoes})</span>
                   </div>
                 )}
               </div>
@@ -383,9 +358,7 @@ function Profile() {
             <Input
               placeholder="Ex: São Paulo, SP"
               value={formData.localizacao}
-              onChange={(e) =>
-                setFormData({ ...formData, localizacao: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, localizacao: e.target.value })}
             />
           </div>
           <div>
@@ -393,9 +366,7 @@ function Profile() {
             <Textarea
               placeholder="Conte um pouco sobre você..."
               value={formData.bio}
-              onChange={(e) =>
-                setFormData({ ...formData, bio: e.target.value })
-              }
+              onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
               rows={3}
               maxLength={500}
             />
@@ -405,18 +376,14 @@ function Profile() {
               type="checkbox"
               id="isTutor"
               checked={formData.isTutor}
-              onChange={(e) =>
-                setFormData({ ...formData, isTutor: e.target.checked })
-              }
+              onChange={(e) => setFormData({ ...formData, isTutor: e.target.checked })}
               className="w-5 h-5 accent-violet-600 rounded"
             />
             <div>
               <Label htmlFor="isTutor" className="font-medium cursor-pointer">
                 Quero ser tutor
               </Label>
-              <p className="text-sm text-gray-500">
-                Ative para poder dar aulas
-              </p>
+              <p className="text-sm text-gray-500">Ative para poder dar aulas</p>
             </div>
           </div>
         </CardContent>
@@ -431,10 +398,7 @@ function Profile() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-2">
-            <Select
-              value={novaDisciplinaPrecisa}
-              onValueChange={setNovaDisciplinaPrecisa}
-            >
+            <Select value={novaDisciplinaPrecisa} onValueChange={setNovaDisciplinaPrecisa}>
               <SelectTrigger className="flex-1">
                 <SelectValue placeholder="Selecione" />
               </SelectTrigger>
@@ -458,25 +422,15 @@ function Profile() {
                 ))}
               </SelectContent>
             </Select>
-            <Button
-              onClick={adicionarDisciplinaPrecisa}
-              size="icon"
-              className="bg-violet-600"
-            >
+            <Button onClick={adicionarDisciplinaPrecisa} size="icon" className="bg-violet-600">
               <Plus className="w-4 h-4" />
             </Button>
           </div>
           <div className="flex flex-wrap gap-2 min-h-[40px]">
             {formData.disciplinas_precisa.map((d, i) => (
-              <Badge
-                key={i}
-                className="bg-indigo-100 text-indigo-700 pr-1 py-1"
-              >
+              <Badge key={i} className="bg-indigo-100 text-indigo-700 pr-1 py-1">
                 {d.disciplina} • {d.nivel_desejado}
-                <button
-                  onClick={() => removerDisciplinaPrecisa(i)}
-                  className="ml-2"
-                >
+                <button onClick={() => removerDisciplinaPrecisa(i)} className="ml-2">
                   <X className="w-3 h-3" />
                 </button>
               </Badge>
@@ -495,10 +449,7 @@ function Profile() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex gap-2">
-              <Select
-                value={novaDisciplinaDomina}
-                onValueChange={setNovaDisciplinaDomina}
-              >
+              <Select value={novaDisciplinaDomina} onValueChange={setNovaDisciplinaDomina}>
                 <SelectTrigger className="flex-1">
                   <SelectValue placeholder="Selecione" />
                 </SelectTrigger>
@@ -522,25 +473,15 @@ function Profile() {
                   ))}
                 </SelectContent>
               </Select>
-              <Button
-                onClick={adicionarDisciplinaDomina}
-                size="icon"
-                className="bg-violet-600"
-              >
+              <Button onClick={adicionarDisciplinaDomina} size="icon" className="bg-violet-600">
                 <Plus className="w-4 h-4" />
               </Button>
             </div>
             <div className="flex flex-wrap gap-2 min-h-[40px]">
               {formData.disciplinas_dominadas.map((d, i) => (
-                <Badge
-                  key={i}
-                  className="bg-violet-100 text-violet-700 pr-1 py-1"
-                >
+                <Badge key={i} className="bg-violet-100 text-violet-700 pr-1 py-1">
                   {d.disciplina} • {d.nivel}
-                  <button
-                    onClick={() => removerDisciplinaDomina(i)}
-                    className="ml-2"
-                  >
+                  <button onClick={() => removerDisciplinaDomina(i)} className="ml-2">
                     <X className="w-3 h-3" />
                   </button>
                 </Badge>
@@ -560,8 +501,7 @@ function Profile() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-700">
-              Adicione as datas e horários em que você está disponível para dar
-              tutorias.
+              Adicione as datas e horários em que você está disponível para dar tutorias.
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
@@ -580,9 +520,7 @@ function Profile() {
                 />
               </div>
               <div>
-                <Label className="text-xs text-gray-500 mb-1 block">
-                  Início
-                </Label>
+                <Label className="text-xs text-gray-500 mb-1 block">Início</Label>
                 <Input
                   type="time"
                   value={novaDisponibilidade.horario_inicio}
@@ -629,9 +567,7 @@ function Profile() {
               {datasOrdenadas.length > 0 ? (
                 datasOrdenadas.map((dataKey) => (
                   <div key={dataKey} className="border rounded-lg p-3">
-                    <div className="font-medium text-gray-900 mb-2">
-                      {formatDate(dataKey)}
-                    </div>
+                    <div className="font-medium text-gray-900 mb-2">{formatDate(dataKey)}</div>
                     <div className="flex flex-wrap gap-2">
                       {disponibilidadesPorData[dataKey].map((disp) => (
                         <div

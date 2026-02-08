@@ -11,13 +11,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "../ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
 import { Calendar, Clock, Loader2, Star } from "lucide-react";
 import { getInitials, formatDateFull } from "./utils";
 
@@ -174,10 +168,8 @@ function ScheduleModal({
           {slotSelecionado && (
             <div className="bg-violet-50 border border-violet-200 rounded-lg p-3">
               <p className="text-sm text-violet-700">
-                <strong>Selecionado:</strong>{" "}
-                {formatDateFull(slotSelecionado.data)} das{" "}
-                {slotSelecionado.horario_inicio} as{" "}
-                {slotSelecionado.horario_fim}
+                <strong>Selecionado:</strong> {formatDateFull(slotSelecionado.data)} das{" "}
+                {slotSelecionado.horario_inicio} as {slotSelecionado.horario_fim}
               </p>
             </div>
           )}

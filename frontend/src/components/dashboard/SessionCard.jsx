@@ -3,25 +3,10 @@ import { Card, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { Avatar, AvatarFallback } from "../ui/avatar";
-import {
-  Calendar,
-  Clock,
-  Video,
-  Star,
-  CheckCircle,
-  XCircle,
-} from "lucide-react";
+import { Calendar, Clock, Video, Star, CheckCircle, XCircle } from "lucide-react";
 import { getInitials, formatDate, formatTime, getStatusColor } from "./utils";
 
-function SessionCard({
-  sessao,
-  userId,
-  onConfirm,
-  onComplete,
-  onCancel,
-  onRate,
-  index = 0,
-}) {
+function SessionCard({ sessao, userId, onConfirm, onComplete, onCancel, onRate, index = 0 }) {
   const isTutor = sessao.tutor._id === userId;
   const outra = isTutor ? sessao.aluno : sessao.tutor;
   const isPast = new Date(sessao.data_hora_fim) < new Date();
@@ -47,9 +32,7 @@ function SessionCard({
                   {outra.nome}
                 </p>
               </div>
-              <Badge className={getStatusColor(sessao.status)}>
-                {sessao.status}
-              </Badge>
+              <Badge className={getStatusColor(sessao.status)}>{sessao.status}</Badge>
             </div>
             <div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-3">
               <div className="flex items-center gap-1">
@@ -58,8 +41,7 @@ function SessionCard({
               </div>
               <div className="flex items-center gap-1">
                 <Clock className="w-4 h-4" />
-                {formatTime(sessao.data_hora_inicio)} -{" "}
-                {formatTime(sessao.data_hora_fim)}
+                {formatTime(sessao.data_hora_inicio)} - {formatTime(sessao.data_hora_fim)}
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -76,50 +58,34 @@ function SessionCard({
                   </Button>
                 )}
               {isTutor && sessao.status === "Pendente" && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onConfirm(sessao._id)}
-                >
+                <Button size="sm" variant="outline" onClick={() => onConfirm(sessao._id)}>
                   <CheckCircle className="w-4 h-4 mr-2" />
                   Confirmar
                 </Button>
               )}
               {sessao.status === "Confirmada" && isPast && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onComplete(sessao._id)}
-                >
+                <Button size="sm" variant="outline" onClick={() => onComplete(sessao._id)}>
                   <CheckCircle className="w-4 h-4 mr-2" />
                   Concluir
                 </Button>
               )}
-              {!isTutor &&
-                sessao.status === "Concluída" &&
-                sessao.avaliacao_pendente && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => onRate(sessao)}
-                  >
-                    <Star className="w-4 h-4 mr-2" />
-                    Avaliar
-                  </Button>
-                )}
-              {(sessao.status === "Pendente" ||
-                sessao.status === "Confirmada") &&
-                !isPast && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-red-600"
-                    onClick={() => onCancel(sessao)}
-                  >
-                    <XCircle className="w-4 h-4 mr-2" />
-                    Cancelar
-                  </Button>
-                )}
+              {!isTutor && sessao.status === "Concluída" && sessao.avaliacao_pendente && (
+                <Button size="sm" variant="outline" onClick={() => onRate(sessao)}>
+                  <Star className="w-4 h-4 mr-2" />
+                  Avaliar
+                </Button>
+              )}
+              {(sessao.status === "Pendente" || sessao.status === "Confirmada") && !isPast && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-red-600"
+                  onClick={() => onCancel(sessao)}
+                >
+                  <XCircle className="w-4 h-4 mr-2" />
+                  Cancelar
+                </Button>
+              )}
             </div>
           </div>
         </div>

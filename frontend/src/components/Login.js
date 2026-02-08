@@ -2,21 +2,8 @@ import React from "react";
 import { Button } from "./ui/button";
 import usersApi from "../api/services/usersApi";
 import authApi from "../api/services/authApi";
-import {
-  Loader2,
-  ArrowRight,
-  GraduationCap,
-  BookOpen,
-  Users,
-  TrendingUp,
-} from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "./ui/dialog";
+import { Loader2, ArrowRight, GraduationCap, BookOpen, Users, TrendingUp } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "./ui/dialog";
 
 function Login() {
   const [isLoading, setIsLoading] = React.useState(false);
@@ -51,13 +38,9 @@ function Login() {
               <div className="w-10 h-10 bg-gradient-to-br from-violet-600 to-indigo-600 rounded-xl flex items-center justify-center">
                 <GraduationCap className="w-6 h-6 text-white" />
               </div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Tutor Connect
-              </h1>
+              <h1 className="text-2xl font-bold text-gray-900">Tutor Connect</h1>
             </div>
-            <h2 className="text-4xl font-bold text-gray-900 leading-tight">
-              Aprenda ensinando
-            </h2>
+            <h2 className="text-4xl font-bold text-gray-900 leading-tight">Aprenda ensinando</h2>
             <p className="text-lg text-gray-600">
               Conecte-se com colegas, compartilhe conhecimento e cresçam juntos
             </p>
@@ -67,16 +50,12 @@ function Login() {
           <div className="flex gap-6 mb-4">
             <div className="flex items-center gap-2 bg-violet-50 rounded-lg px-3 py-1">
               <GraduationCap className="w-5 h-5 text-violet-600" />
-              <span className="font-semibold text-violet-700">
-                {contagem.totalTutores}
-              </span>
+              <span className="font-semibold text-violet-700">{contagem.totalTutores}</span>
               <span className="text-gray-600 text-xs">tutores</span>
             </div>
             <div className="flex items-center gap-2 bg-indigo-50 rounded-lg px-3 py-1">
               <Users className="w-5 h-5 text-indigo-600" />
-              <span className="font-semibold text-indigo-700">
-                {contagem.totalAlunos}
-              </span>
+              <span className="font-semibold text-indigo-700">{contagem.totalAlunos}</span>
               <span className="text-gray-600 text-xs">alunos</span>
             </div>
           </div>
@@ -144,10 +123,7 @@ function Login() {
             </p>
             <div className="space-y-3">
               {features.map((feature, index) => (
-                <div
-                  key={index}
-                  className="flex items-center gap-3 text-gray-700"
-                >
+                <div key={index} className="flex items-center gap-3 text-gray-700">
                   <div className="w-8 h-8 bg-violet-100 rounded-lg flex items-center justify-center flex-shrink-0">
                     <feature.icon className="w-4 h-4 text-violet-600" />
                   </div>
@@ -176,9 +152,7 @@ function Login() {
           <div className="space-y-6 max-w-lg">
             <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-full">
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              <span className="text-sm font-medium">
-                Plataforma de tutoria colaborativa
-              </span>
+              <span className="text-sm font-medium">Plataforma de tutoria colaborativa</span>
             </div>
 
             <h3 className="text-4xl font-bold leading-tight">
@@ -186,8 +160,8 @@ function Login() {
             </h3>
 
             <p className="text-xl text-violet-100">
-              Encontre tutores que dominam o que você precisa aprender. Marque
-              tutorias, compartilhe conhecimento e cresçam juntos.
+              Encontre tutores que dominam o que você precisa aprender. Marque tutorias, compartilhe
+              conhecimento e cresçam juntos.
             </p>
 
             <div className="grid grid-cols-3 gap-8 pt-8">
@@ -231,63 +205,50 @@ function Login() {
               <div>
                 <h4 className="font-semibold mb-1">1. Aceitação dos Termos</h4>
                 <p>
-                  Ao acessar ou usar o Tutor Connect, você concorda com estes
-                  Termos de Uso e com nossa Política de Privacidade. Se você não
-                  concorda com estes termos, não utilize a plataforma.
+                  Ao acessar ou usar o Tutor Connect, você concorda com estes Termos de Uso e com
+                  nossa Política de Privacidade. Se você não concorda com estes termos, não utilize
+                  a plataforma.
                 </p>
               </div>
               <div>
                 <h4 className="font-semibold mb-1">2. Descrição do Serviço</h4>
                 <p>
-                  Tutor Connect é uma plataforma colaborativa que conecta
-                  estudantes para sessões de tutoria online. O serviço é
-                  gratuito e destinado exclusivamente para fins educacionais.
+                  Tutor Connect é uma plataforma colaborativa que conecta estudantes para sessões de
+                  tutoria online. O serviço é gratuito e destinado exclusivamente para fins
+                  educacionais.
                 </p>
               </div>
               <div>
                 <h4 className="font-semibold mb-1">3. Cadastro e Conta</h4>
                 <ul className="list-disc ml-5 space-y-1">
-                  <li>
-                    Você deve fornecer informações verdadeiras e atualizadas ao
-                    se cadastrar.
-                  </li>
-                  <li>
-                    O acesso à plataforma é realizado via autenticação Google
-                    OAuth.
-                  </li>
-                  <li>
-                    Você é responsável por manter a confidencialidade de suas
-                    credenciais.
-                  </li>
+                  <li>Você deve fornecer informações verdadeiras e atualizadas ao se cadastrar.</li>
+                  <li>O acesso à plataforma é realizado via autenticação Google OAuth.</li>
+                  <li>Você é responsável por manter a confidencialidade de suas credenciais.</li>
                 </ul>
               </div>
               <div>
                 <h4 className="font-semibold mb-1">4. Uso da Plataforma</h4>
                 <ul className="list-disc ml-5 space-y-1">
                   <li>
-                    Não é permitido utilizar a plataforma para fins ilícitos,
-                    comerciais ou que violem direitos de terceiros.
+                    Não é permitido utilizar a plataforma para fins ilícitos, comerciais ou que
+                    violem direitos de terceiros.
                   </li>
                   <li>
-                    É proibido publicar conteúdo ofensivo, discriminatório,
-                    falso ou que infrinja leis.
+                    É proibido publicar conteúdo ofensivo, discriminatório, falso ou que infrinja
+                    leis.
                   </li>
-                  <li>
-                    O Tutor Connect pode suspender ou excluir contas que violem
-                    estes termos.
-                  </li>
+                  <li>O Tutor Connect pode suspender ou excluir contas que violem estes termos.</li>
                 </ul>
               </div>
               <div>
                 <h4 className="font-semibold mb-1">5. Privacidade</h4>
                 <ul className="list-disc ml-5 space-y-1">
                   <li>
-                    Suas informações pessoais são tratadas conforme nossa
-                    Política de Privacidade.
+                    Suas informações pessoais são tratadas conforme nossa Política de Privacidade.
                   </li>
                   <li>
-                    Dados de perfil, sessões e avaliações podem ser exibidos
-                    para outros usuários da plataforma.
+                    Dados de perfil, sessões e avaliações podem ser exibidos para outros usuários da
+                    plataforma.
                   </li>
                 </ul>
               </div>
@@ -295,58 +256,48 @@ function Login() {
                 <h4 className="font-semibold mb-1">6. Conteúdo do Usuário</h4>
                 <ul className="list-disc ml-5 space-y-1">
                   <li>
-                    Você é responsável pelo conteúdo que publica (bio,
-                    avaliações, comentários).
+                    Você é responsável pelo conteúdo que publica (bio, avaliações, comentários).
                   </li>
                   <li>
-                    O Tutor Connect reserva-se o direito de remover conteúdo
-                    inadequado sem aviso prévio.
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-1">
-                  7. Limitação de Responsabilidade
-                </h4>
-                <ul className="list-disc ml-5 space-y-1">
-                  <li>
-                    O Tutor Connect não se responsabiliza por eventuais danos,
-                    perdas ou prejuízos decorrentes do uso da plataforma.
-                  </li>
-                  <li>
-                    O serviço é fornecido "como está", sem garantias de
-                    disponibilidade, precisão ou adequação para um fim
-                    específico.
+                    O Tutor Connect reserva-se o direito de remover conteúdo inadequado sem aviso
+                    prévio.
                   </li>
                 </ul>
               </div>
               <div>
-                <h4 className="font-semibold mb-1">
-                  8. Modificações nos Termos
-                </h4>
+                <h4 className="font-semibold mb-1">7. Limitação de Responsabilidade</h4>
                 <ul className="list-disc ml-5 space-y-1">
                   <li>
-                    Estes termos podem ser atualizados a qualquer momento.
-                    Recomendamos que você os revise periodicamente.
+                    O Tutor Connect não se responsabiliza por eventuais danos, perdas ou prejuízos
+                    decorrentes do uso da plataforma.
                   </li>
                   <li>
-                    O uso contínuo da plataforma após alterações implica
-                    aceitação dos novos termos.
+                    O serviço é fornecido "como está", sem garantias de disponibilidade, precisão ou
+                    adequação para um fim específico.
                   </li>
                 </ul>
               </div>
               <div>
-                <h4 className="font-semibold mb-1">
-                  9. Propriedade Intelectual
-                </h4>
+                <h4 className="font-semibold mb-1">8. Modificações nos Termos</h4>
                 <ul className="list-disc ml-5 space-y-1">
                   <li>
-                    Todo o conteúdo, marca, código-fonte e funcionalidades do
-                    Tutor Connect são protegidos por direitos autorais.
+                    Estes termos podem ser atualizados a qualquer momento. Recomendamos que você os
+                    revise periodicamente.
                   </li>
                   <li>
-                    É proibida a reprodução, distribuição ou modificação sem
-                    autorização prévia.
+                    O uso contínuo da plataforma após alterações implica aceitação dos novos termos.
+                  </li>
+                </ul>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-1">9. Propriedade Intelectual</h4>
+                <ul className="list-disc ml-5 space-y-1">
+                  <li>
+                    Todo o conteúdo, marca, código-fonte e funcionalidades do Tutor Connect são
+                    protegidos por direitos autorais.
+                  </li>
+                  <li>
+                    É proibida a reprodução, distribuição ou modificação sem autorização prévia.
                   </li>
                 </ul>
               </div>
@@ -362,8 +313,8 @@ function Login() {
               <hr />
               <div>
                 <p>
-                  Ao utilizar o Tutor Connect, você declara estar de acordo com
-                  todos os termos acima.
+                  Ao utilizar o Tutor Connect, você declara estar de acordo com todos os termos
+                  acima.
                 </p>
               </div>
             </div>
@@ -396,57 +347,47 @@ function Login() {
               <div>
                 <h4 className="font-semibold mb-1">1. Introdução</h4>
                 <p>
-                  Esta Política de Privacidade explica como o Tutor Connect
-                  coleta, utiliza, armazena e protege suas informações pessoais
-                  ao utilizar a plataforma.
+                  Esta Política de Privacidade explica como o Tutor Connect coleta, utiliza,
+                  armazena e protege suas informações pessoais ao utilizar a plataforma.
                 </p>
               </div>
               <div>
                 <h4 className="font-semibold mb-1">2. Informações Coletadas</h4>
                 <ul className="list-disc ml-5 space-y-1">
                   <li>
-                    <strong>Dados de autenticação:</strong> Nome, e-mail e
-                    identificador do Google, coletados via login OAuth.
+                    <strong>Dados de autenticação:</strong> Nome, e-mail e identificador do Google,
+                    coletados via login OAuth.
                   </li>
                   <li>
-                    <strong>Dados de perfil:</strong> Informações fornecidas
-                    voluntariamente, como bio, localização, disciplinas,
-                    disponibilidade.
+                    <strong>Dados de perfil:</strong> Informações fornecidas voluntariamente, como
+                    bio, localização, disciplinas, disponibilidade.
                   </li>
                   <li>
-                    <strong>Dados de uso:</strong> Informações sobre sessões
-                    agendadas, avaliações, comentários e interações na
-                    plataforma.
+                    <strong>Dados de uso:</strong> Informações sobre sessões agendadas, avaliações,
+                    comentários e interações na plataforma.
                   </li>
                 </ul>
               </div>
               <div>
                 <h4 className="font-semibold mb-1">3. Uso das Informações</h4>
                 <ul className="list-disc ml-5 space-y-1">
-                  <li>
-                    Permitir o funcionamento da plataforma e suas
-                    funcionalidades.
-                  </li>
+                  <li>Permitir o funcionamento da plataforma e suas funcionalidades.</li>
                   <li>Facilitar a conexão entre alunos e tutores.</li>
                   <li>Gerenciar sessões, avaliações e notificações.</li>
-                  <li>
-                    Melhorar a experiência do usuário e a segurança do sistema.
-                  </li>
+                  <li>Melhorar a experiência do usuário e a segurança do sistema.</li>
                 </ul>
               </div>
               <div>
-                <h4 className="font-semibold mb-1">
-                  4. Compartilhamento de Dados
-                </h4>
+                <h4 className="font-semibold mb-1">4. Compartilhamento de Dados</h4>
                 <ul className="list-disc ml-5 space-y-1">
                   <li>
-                    Dados de perfil, sessões e avaliações podem ser exibidos
-                    para outros usuários da plataforma.
+                    Dados de perfil, sessões e avaliações podem ser exibidos para outros usuários da
+                    plataforma.
                   </li>
                   <li>
-                    Não compartilhamos suas informações pessoais com terceiros,
-                    exceto quando exigido por lei ou para funcionamento do
-                    serviço (ex: integração Google Calendar).
+                    Não compartilhamos suas informações pessoais com terceiros, exceto quando
+                    exigido por lei ou para funcionamento do serviço (ex: integração Google
+                    Calendar).
                   </li>
                 </ul>
               </div>
@@ -454,13 +395,11 @@ function Login() {
                 <h4 className="font-semibold mb-1">5. Segurança</h4>
                 <ul className="list-disc ml-5 space-y-1">
                   <li>
-                    Adotamos medidas técnicas e organizacionais para proteger
-                    seus dados contra acesso não autorizado, alteração,
-                    divulgação ou destruição.
+                    Adotamos medidas técnicas e organizacionais para proteger seus dados contra
+                    acesso não autorizado, alteração, divulgação ou destruição.
                   </li>
                   <li>
-                    O acesso à plataforma é protegido por autenticação segura
-                    via Google OAuth.
+                    O acesso à plataforma é protegido por autenticação segura via Google OAuth.
                   </li>
                 </ul>
               </div>
@@ -468,59 +407,41 @@ function Login() {
                 <h4 className="font-semibold mb-1">6. Retenção de Dados</h4>
                 <ul className="list-disc ml-5 space-y-1">
                   <li>
-                    Seus dados são mantidos enquanto sua conta estiver ativa ou
-                    conforme necessário para cumprir obrigações legais.
+                    Seus dados são mantidos enquanto sua conta estiver ativa ou conforme necessário
+                    para cumprir obrigações legais.
                   </li>
-                  <li>
-                    Você pode solicitar a exclusão de sua conta e dados a
-                    qualquer momento.
-                  </li>
+                  <li>Você pode solicitar a exclusão de sua conta e dados a qualquer momento.</li>
                 </ul>
               </div>
               <div>
                 <h4 className="font-semibold mb-1">7. Direitos do Usuário</h4>
                 <ul className="list-disc ml-5 space-y-1">
-                  <li>
-                    Solicitar acesso, correção ou exclusão de seus dados
-                    pessoais.
-                  </li>
-                  <li>
-                    Solicitar informações sobre o tratamento de seus dados.
-                  </li>
-                  <li>
-                    Revogar o consentimento para uso de dados, quando aplicável.
-                  </li>
+                  <li>Solicitar acesso, correção ou exclusão de seus dados pessoais.</li>
+                  <li>Solicitar informações sobre o tratamento de seus dados.</li>
+                  <li>Revogar o consentimento para uso de dados, quando aplicável.</li>
                 </ul>
               </div>
               <div>
-                <h4 className="font-semibold mb-1">
-                  8. Cookies e Tecnologias Semelhantes
-                </h4>
+                <h4 className="font-semibold mb-1">8. Cookies e Tecnologias Semelhantes</h4>
                 <ul className="list-disc ml-5 space-y-1">
                   <li>
-                    Utilizamos cookies apenas para autenticação e funcionamento
-                    básico da plataforma.
+                    Utilizamos cookies apenas para autenticação e funcionamento básico da
+                    plataforma.
                   </li>
-                  <li>
-                    Não utilizamos cookies para rastreamento de terceiros ou
-                    publicidade.
-                  </li>
+                  <li>Não utilizamos cookies para rastreamento de terceiros ou publicidade.</li>
                 </ul>
               </div>
               <div>
-                <h4 className="font-semibold mb-1">
-                  9. Alterações na Política
-                </h4>
+                <h4 className="font-semibold mb-1">9. Alterações na Política</h4>
                 <p>
-                  Esta política pode ser atualizada periodicamente. Recomendamos
-                  que você a revise regularmente.
+                  Esta política pode ser atualizada periodicamente. Recomendamos que você a revise
+                  regularmente.
                 </p>
               </div>
               <div>
                 <h4 className="font-semibold mb-1">10. Contato</h4>
                 <p>
-                  Dúvidas ou solicitações sobre privacidade? Entre em contato
-                  pelo e-mail:{" "}
+                  Dúvidas ou solicitações sobre privacidade? Entre em contato pelo e-mail:{" "}
                   <a href="mailto:amorimm.dev@gmail.com" className="underline">
                     amorimm.dev@gmail.com
                   </a>
@@ -528,10 +449,7 @@ function Login() {
               </div>
               <hr />
               <div>
-                <p>
-                  Ao utilizar o Tutor Connect, você concorda com esta Política
-                  de Privacidade.
-                </p>
+                <p>Ao utilizar o Tutor Connect, você concorda com esta Política de Privacidade.</p>
               </div>
             </div>
           </div>

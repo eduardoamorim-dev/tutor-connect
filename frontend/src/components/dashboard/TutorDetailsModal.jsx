@@ -2,24 +2,11 @@ import React from "react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { Avatar, AvatarFallback } from "../ui/avatar";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "../ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "../ui/dialog";
 import { Calendar, Loader2, Star, MapPin, MessageSquare } from "lucide-react";
 import { getInitials } from "./utils";
 
-function TutorDetailsModal({
-  tutor,
-  avaliacoes,
-  loadingAvaliacoes,
-  open,
-  onClose,
-  onSchedule,
-}) {
+function TutorDetailsModal({ tutor, avaliacoes, loadingAvaliacoes, open, onClose, onSchedule }) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
@@ -36,9 +23,7 @@ function TutorDetailsModal({
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <h3 className="text-xl font-semibold text-gray-900">
-                  {tutor.nome}
-                </h3>
+                <h3 className="text-xl font-semibold text-gray-900">{tutor.nome}</h3>
                 {tutor.localizacao && (
                   <p className="text-sm text-gray-600 flex items-center gap-1 mt-1">
                     <MapPin className="w-3 h-3" />
@@ -49,12 +34,8 @@ function TutorDetailsModal({
                   {tutor.rating > 0 && (
                     <div className="flex items-center gap-1">
                       <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-                      <span className="font-semibold text-lg">
-                        {tutor.rating.toFixed(1)}
-                      </span>
-                      <span className="text-gray-500 text-sm">
-                        ({tutor.total_avaliacoes})
-                      </span>
+                      <span className="font-semibold text-lg">{tutor.rating.toFixed(1)}</span>
+                      <span className="text-gray-500 text-sm">({tutor.total_avaliacoes})</span>
                     </div>
                   )}
                   <div className="text-sm text-gray-500">
@@ -72,9 +53,7 @@ function TutorDetailsModal({
             )}
 
             <div>
-              <h4 className="font-medium text-gray-900 mb-2">
-                Disciplinas que ensina
-              </h4>
+              <h4 className="font-medium text-gray-900 mb-2">Disciplinas que ensina</h4>
               <div className="flex flex-wrap gap-2">
                 {tutor.disciplinas_dominadas.map((d, i) => (
                   <Badge key={i} className="bg-violet-100 text-violet-700">
@@ -97,17 +76,12 @@ function TutorDetailsModal({
               ) : avaliacoes.length > 0 ? (
                 <div className="space-y-4 max-h-[300px] overflow-y-auto">
                   {avaliacoes.map((avaliacao) => (
-                    <div
-                      key={avaliacao._id}
-                      className="border rounded-lg p-4 bg-white"
-                    >
+                    <div key={avaliacao._id} className="border rounded-lg p-4 bg-white">
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <Avatar className="h-8 w-8">
                             <AvatarFallback className="bg-gray-100 text-gray-600 text-xs">
-                              {getInitials(
-                                avaliacao.aluno?.nome || "Anonimo",
-                              )}
+                              {getInitials(avaliacao.aluno?.nome || "Anonimo")}
                             </AvatarFallback>
                           </Avatar>
                           <div>
@@ -115,11 +89,8 @@ function TutorDetailsModal({
                               {avaliacao.aluno?.nome || "Anonimo"}
                             </p>
                             <p className="text-xs text-gray-500">
-                              {avaliacao.sessao?.disciplina &&
-                                `${avaliacao.sessao.disciplina} • `}
-                              {new Date(avaliacao.data).toLocaleDateString(
-                                "pt-BR",
-                              )}
+                              {avaliacao.sessao?.disciplina && `${avaliacao.sessao.disciplina} • `}
+                              {new Date(avaliacao.data).toLocaleDateString("pt-BR")}
                             </p>
                           </div>
                         </div>
@@ -133,9 +104,7 @@ function TutorDetailsModal({
                         </div>
                       </div>
                       {avaliacao.comentario && (
-                        <p className="text-gray-600 text-sm mt-2 pl-10">
-                          "{avaliacao.comentario}"
-                        </p>
+                        <p className="text-gray-600 text-sm mt-2 pl-10">"{avaliacao.comentario}"</p>
                       )}
                     </div>
                   ))}
@@ -155,10 +124,7 @@ function TutorDetailsModal({
             Fechar
           </Button>
           {tutor?.disponibilidade?.length > 0 && (
-            <Button
-              className="bg-violet-600 hover:bg-violet-700"
-              onClick={() => onSchedule(tutor)}
-            >
+            <Button className="bg-violet-600 hover:bg-violet-700" onClick={() => onSchedule(tutor)}>
               <Calendar className="w-4 h-4 mr-2" />
               Agendar Sessao
             </Button>
