@@ -181,6 +181,15 @@ const sessionService = {
       notificarAvaliacaoPendente(sessao, tutor.nome),
     ]);
 
+    // Create automatic hour registration for tutor (if they have a program)
+    try {
+      const hoursTrackingService = require("./hoursTrackingService");
+      await hoursTrackingService.createHoursFromSession(sessao._id);
+    } catch (error) {
+      // Log error but don't fail session completion
+      logger.error(`Erro ao criar registro de horas para sessão ${sessao._id}: ${error.message}`);
+    }
+
     return sessaoRepository.findByIdPopulated(sessao._id);
   },
 

@@ -16,8 +16,10 @@ import Dashboard from "./components/Dashboard";
 import ProfileSetup from "./components/ProfileSetup";
 import Profile from "./components/Profile";
 import Notifications from "./components/Notifications";
+import CoordinatorDashboard from "./pages/CoordinatorDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 import { Avatar, AvatarFallback } from "./components/ui/avatar";
-import { LayoutDashboard, User, LogOut, Menu, X, GraduationCap } from "lucide-react";
+import { LayoutDashboard, User, LogOut, Menu, X, GraduationCap, UserCheck, Shield } from "lucide-react";
 import ErrorBoundary from "./components/ErrorBoundary";
 import "./index.css";
 
@@ -89,6 +91,24 @@ function Navbar() {
     { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { path: "/profile", label: "Meu Perfil", icon: User },
   ];
+
+  // Add coordinator dashboard if user is coordinator or admin
+  if (user && (user.role === "coordinator" || user.role === "admin")) {
+    navItems.splice(1, 0, {
+      path: "/coordinator",
+      label: "Aprovações",
+      icon: UserCheck,
+    });
+  }
+
+  // Add admin dashboard if user is admin
+  if (user && user.role === "admin") {
+    navItems.splice(1, 0, {
+      path: "/admin",
+      label: "Administração",
+      icon: Shield,
+    });
+  }
 
   return (
     <>
@@ -295,6 +315,32 @@ function AppRoutes() {
             token ? (
               <ProtectedRoute>
                 <Profile />
+              </ProtectedRoute>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+
+        <Route
+          path="/coordinator"
+          element={
+            token ? (
+              <ProtectedRoute>
+                <CoordinatorDashboard />
+              </ProtectedRoute>
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
+
+        <Route
+          path="/admin"
+          element={
+            token ? (
+              <ProtectedRoute>
+                <AdminDashboard />
               </ProtectedRoute>
             ) : (
               <Navigate to="/login" />

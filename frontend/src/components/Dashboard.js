@@ -17,7 +17,7 @@ import ScheduleModal from "./dashboard/ScheduleModal";
 import RateModal from "./dashboard/RateModal";
 import CancelModal from "./dashboard/CancelModal";
 import TutorCardSkeleton from "./dashboard/TutorCardSkeleton";
-import SessionCardSkeleton from "./dashboard/SessionCardSkeleton";
+import HoursTrackingCard from "./hours/HoursTrackingCard";
 
 function Dashboard() {
   const { user } = useAuth();
@@ -90,12 +90,16 @@ function Dashboard() {
     setTutorSelecionado(tutor);
     setShowAgendamento(true);
     setShowDetalhesTutor(false);
+
+    // Always fetch fresh availability data to prevent double-booking
     try {
       setLoadingDisponibilidade(true);
       const res = await usersApi.getTutorDisponibilidade(tutor._id);
       setDisponibilidades(res.data);
-    } catch {
+    } catch (error) {
+      console.error("Error fetching availability:", error);
       setDisponibilidades([]);
+      toast.error("Erro ao carregar disponibilidade do tutor");
     } finally {
       setLoadingDisponibilidade(false);
     }
@@ -106,10 +110,27 @@ function Dashboard() {
       const dataSlot = new Date(slot.data);
       const [hi, mi] = slot.horario_inicio.split(":").map(Number);
       const [hf, mf] = slot.horario_fim.split(":").map(Number);
-      const data_hora_inicio = new Date(dataSlot);
-      data_hora_inicio.setHours(hi, mi, 0, 0);
-      const data_hora_fim = new Date(dataSlot);
-      data_hora_fim.setHours(hf, mf, 0, 0);
+
+      // Use hora local (não UTC) para funcionar com timezone brasileiro
+      const data_hora_inicio = new Date(
+        dataSlot.getFullYear(),
+        dataSlot.getMonth(),
+        dataSlot.getDate(),
+        hi,
+        mi,
+        0,
+        0
+      );
+
+      const data_hora_fim = new Date(
+        dataSlot.getFullYear(),
+        dataSlot.getMonth(),
+        dataSlot.getDate(),
+        hf,
+        mf,
+        0,
+        0
+      );
 
       try {
         await sessoesApi.create({
@@ -188,6 +209,9 @@ function Dashboard() {
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="container mx-auto px-6 py-8">
+        {/* Hours Tracking Card */}
+        <HoursTrackingCard />
+
         {/* Tabs */}
         <div className="flex gap-4 mb-8 border-b">
           <button

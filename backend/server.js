@@ -31,7 +31,7 @@ app.use(
   cors({
     origin: process.env.CORS_ORIGIN || "http://localhost:3000",
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
@@ -81,6 +81,9 @@ app.use("/auth", authRoutes);
 app.use("/sessoes", sessaoRoutes);
 app.use("/users", userRoutes);
 app.use("/notificacoes", notificacaoRoutes);
+app.use("/instituicoes", require("./routes/instituicoes"));
+app.use("/programas", require("./routes/programas"));
+app.use("/horas", require("./routes/horas"));
 
 // Rota de teste
 app.get("/", (req, res) => {

@@ -89,18 +89,10 @@
    TRANSIÇÕES SUAVES (Sem afetar modais)
    ======================================== */
 
-/* Transições apenas em elementos interativos */
+/* Transições apenas em propriedades visuais - NUNCA usar 'all' pois causa tremor em Select/Radix */
 button:not([role="dialog"] *),
-a:not([role="dialog"] *),
-input:not([role="dialog"] *),
-textarea:not([role="dialog"] *),
-select:not([role="dialog"] *) {
-  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Smooth scroll */
-* {
-  scroll-behavior: smooth;
+a:not([role="dialog"] *) {
+  transition: color 200ms ease, background-color 200ms ease, border-color 200ms ease, box-shadow 200ms ease, opacity 200ms ease;
 }
 
 /* ========================================

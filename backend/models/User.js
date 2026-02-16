@@ -10,11 +10,52 @@ const userSchema = new mongoose.Schema({
   // Define se o usuário quer ser tutor
   isTutor: { type: Boolean, default: false },
 
+  // Academic level (separate from role)
+  nivel_academico: {
+    type: String,
+    enum: ["graduacao", "mestrado", "doutorado", "pos-doutorado"],
+    default: "graduacao",
+  },
+
+  // Role system (coexists with isTutor)
+  role: {
+    type: String,
+    enum: ["student", "tutor", "coordinator", "admin"],
+    default: "student",
+  },
+
+  // Institutional links
+  instituicao: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Instituicao",
+  },
+
+  programa: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Programa",
+  },
+
+  // Academic profile
+  lattes_url: { type: String },
+  orcid: { type: String },
+  linha_pesquisa: { type: String, maxlength: 500 },
+  area_concentracao: { type: String, maxlength: 200 },
+
+  // For coordinators: programs they coordinate
+  programas_coordenados: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Programa",
+    },
+  ],
+
   // Disciplinas que o usuário domina (só relevante se isTutor = true)
   disciplinas_dominadas: [
     {
       disciplina: { type: String, required: true },
       nivel: { type: String, enum: ["Básico", "Intermediário", "Avançado"] },
+      codigo_institucional: { type: String }, // e.g., "MAT001"
+      carga_horaria: { type: Number }, // e.g., 60h
     },
   ],
 
@@ -59,5 +100,7 @@ const userSchema = new mongoose.Schema({
 userSchema.index({ "disciplinas_dominadas.disciplina": 1 });
 userSchema.index({ isTutor: 1 });
 userSchema.index({ rating: -1 });
+userSchema.index({ instituicao: 1, programa: 1 });
+userSchema.index({ role: 1 });
 
 module.exports = mongoose.model("User", userSchema);

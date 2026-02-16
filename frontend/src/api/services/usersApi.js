@@ -17,6 +17,10 @@ const usersApi = {
     return api.put("/users/profile", data);
   },
 
+  updateAcademicProfile(data) {
+    return api.patch("/users/perfil-academico", data);
+  },
+
   addDisponibilidade(data) {
     return api.post("/users/disponibilidade", data);
   },
@@ -31,6 +35,14 @@ const usersApi = {
 
   getContagem() {
     return api.get("/users/contagem");
+  },
+
+  searchByEmail(email) {
+    return api.get("/users/search-by-email", { params: { email } });
+  },
+
+  updateUserRole(userId, role) {
+    return api.patch(`/users/${userId}/role`, { role });
   },
 };
 

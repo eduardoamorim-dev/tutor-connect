@@ -539,14 +539,14 @@ Objetivo: Refatorar a arquitetura para suportar crescimento.
 
 Objetivo: Garantir estabilidade com cobertura de testes.
 
-- [ ] Configurar Jest e Supertest no backend
-- [ ] Escrever testes unitarios para todos os servicos
-- [ ] Escrever testes de integracao para todos os endpoints
-- [ ] Configurar React Testing Library no frontend
-- [ ] Escrever testes para fluxos criticos (login, agendamento, avaliacao)
-- [ ] Configurar CI/CD com GitHub Actions (lint, test, build)
-- [ ] Atingir no minimo 70% de cobertura de testes
-- [ ] Adicionar ESLint e Prettier no projeto
+- [x] Configurar Jest e Supertest no backend
+- [x] Escrever testes unitarios para todos os servicos
+- [x] Escrever testes de integracao para todos os endpoints
+- [x] Configurar React Testing Library no frontend
+- [x] Escrever testes para fluxos criticos (login, agendamento, avaliacao)
+- [x] Configurar CI/CD com GitHub Actions (lint, test, build)
+- [x] Atingir no minimo 70% de cobertura de testes
+- [x] Adicionar ESLint e Prettier no projeto
 
 ### Fase 3 -- Funcionalidades para Pos-graduacao (Semanas 9-14)
 

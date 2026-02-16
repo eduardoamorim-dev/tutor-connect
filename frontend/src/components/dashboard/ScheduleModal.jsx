@@ -37,26 +37,32 @@ function ScheduleModal({
     }
   }, [tutor, open]);
 
-  const agora = new Date();
-
   const disponibilidadesPorData = useMemo(() => {
+    const agora = new Date();
     return disponibilidades.reduce((acc, d) => {
-      const date = new Date(d.data);
-      const year = date.getUTCFullYear();
-      const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-      const day = String(date.getUTCDate()).padStart(2, "0");
+      // Skip slots that are already booked/confirmed
+      if (d.jaAgendado) {
+        return acc;
+      }
 
+      const date = new Date(d.data);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+
+      // Parse time usando hora local (não UTC) para timezone brasileiro
       const [horaFim, minFim] = d.horario_fim.split(":").map(Number);
       const dataHoraFim = new Date(
         year,
-        date.getUTCMonth(),
-        date.getUTCDate(),
+        date.getMonth(),
+        date.getDate(),
         horaFim,
         minFim,
         0,
         0,
       );
 
+      // Only show slots where the END time hasn't passed yet
       if (dataHoraFim > agora) {
         const k = `${year}-${month}-${day}`;
         if (!acc[k]) acc[k] = [];
@@ -146,9 +152,12 @@ function ScheduleModal({
                       {disponibilidadesPorData[dk].map((d) => (
                         <button
                           key={d._id}
-                          disabled={d.jaAgendado}
                           onClick={() => setSlotSelecionado(d)}
-                          className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${d.jaAgendado ? "bg-gray-100 text-gray-400 cursor-not-allowed line-through" : slotSelecionado?._id === d._id ? "bg-violet-600 text-white ring-2 ring-violet-300" : "bg-green-50 text-green-700 hover:bg-green-100 border border-green-200"}`}
+                          className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
+                            slotSelecionado?._id === d._id
+                              ? "bg-violet-600 text-white ring-2 ring-violet-300"
+                              : "bg-green-50 text-green-700 hover:bg-green-100 border border-green-200"
+                          }`}
                         >
                           <Clock className="w-3 h-3 inline mr-1" />
                           {d.horario_inicio} - {d.horario_fim}

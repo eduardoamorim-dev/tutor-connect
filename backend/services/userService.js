@@ -51,6 +51,64 @@ const userService = {
   async getUserCount() {
     return userRepository.countByRole();
   },
+
+  /**
+   * Update user's academic profile
+   */
+  async updateAcademicProfile(userId, data) {
+    const user = await userRepository.findById(userId);
+
+    if (!user) {
+      throw new AppError("Usuário não encontrado", 404);
+    }
+
+    const updateData = {};
+
+    if (data.nivel_academico !== undefined) {
+      updateData.nivel_academico = data.nivel_academico;
+    }
+    if (data.instituicao !== undefined) {
+      updateData.instituicao = data.instituicao;
+    }
+    if (data.programa !== undefined) {
+      updateData.programa = data.programa;
+    }
+    if (data.lattes_url !== undefined) {
+      updateData.lattes_url = data.lattes_url;
+    }
+    if (data.orcid !== undefined) {
+      updateData.orcid = data.orcid;
+    }
+    if (data.linha_pesquisa !== undefined) {
+      updateData.linha_pesquisa = data.linha_pesquisa;
+    }
+    if (data.area_concentracao !== undefined) {
+      updateData.area_concentracao = data.area_concentracao;
+    }
+
+    const updatedUser = await userRepository.updateById(userId, updateData);
+    return updatedUser;
+  },
+
+  /**
+   * Update user's role (admin only)
+   */
+  async updateUserRole(userId, role) {
+    const user = await userRepository.findById(userId);
+
+    if (!user) {
+      throw new AppError("Usuário não encontrado", 404);
+    }
+
+    // If setting role to tutor, also set isTutor to true
+    const updateData = { role };
+    if (role === "tutor" && !user.isTutor) {
+      updateData.isTutor = true;
+    }
+
+    const updatedUser = await userRepository.updateById(userId, updateData);
+    return updatedUser;
+  },
 };
 
 module.exports = userService;

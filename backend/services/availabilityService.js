@@ -3,9 +3,10 @@ const sessaoRepository = require("../repositories/sessaoRepository");
 const { AppError } = require("../middleware/errorHandler");
 const logger = require("../config/logger");
 
-// Converte data (YYYY-MM-DD) e horário (HH:MM) para Date UTC
-function toUTCDate(ano, mes, dia, hora, minuto) {
-  return new Date(Date.UTC(ano, mes - 1, dia, hora, minuto, 0, 0));
+// Converte data (YYYY-MM-DD) e horário (HH:MM) para Date LOCAL (não UTC)
+// Para funcionar corretamente com timezone brasileiro
+function toLocalDate(ano, mes, dia, hora, minuto) {
+  return new Date(ano, mes - 1, dia, hora, minuto, 0, 0);
 }
 
 const availabilityService = {
@@ -24,8 +25,8 @@ const availabilityService = {
     const [horaInicio, minutoInicio] = horarioInicio.split(":").map(Number);
     const [horaFim, minutoFim] = horarioFim.split(":").map(Number);
 
-    const dataHoraInicio = toUTCDate(ano, mes, dia, horaInicio, minutoInicio);
-    const dataHoraFim = toUTCDate(ano, mes, dia, horaFim, minutoFim);
+    const dataHoraInicio = toLocalDate(ano, mes, dia, horaInicio, minutoInicio);
+    const dataHoraFim = toLocalDate(ano, mes, dia, horaFim, minutoFim);
     const agora = new Date();
 
     if (dataHoraInicio < agora) {
@@ -98,7 +99,7 @@ const availabilityService = {
       const diaDisp = dataDisp.getUTCDate();
 
       const [horaFim, minFim] = d.horario_fim.split(":").map(Number);
-      const dataHoraFim = toUTCDate(anoDisp, mesDisp, diaDisp, horaFim, minFim);
+      const dataHoraFim = toLocalDate(anoDisp, mesDisp, diaDisp, horaFim, minFim);
 
       return dataHoraFim > agora;
     });
@@ -116,8 +117,8 @@ const availabilityService = {
       const [horaInicioDisp, minInicioDisp] = d.horario_inicio.split(":").map(Number);
       const [horaFimDisp, minFimDisp] = d.horario_fim.split(":").map(Number);
 
-      const inicioSlot = toUTCDate(anoDisp, mesDisp, diaDisp, horaInicioDisp, minInicioDisp);
-      const fimSlot = toUTCDate(anoDisp, mesDisp, diaDisp, horaFimDisp, minFimDisp);
+      const inicioSlot = toLocalDate(anoDisp, mesDisp, diaDisp, horaInicioDisp, minInicioDisp);
+      const fimSlot = toLocalDate(anoDisp, mesDisp, diaDisp, horaFimDisp, minFimDisp);
 
       const jaAgendado = sessoesAgendadas.some((s) => {
         const inicioSessao = new Date(s.data_hora_inicio);
@@ -160,8 +161,8 @@ const availabilityService = {
     const [horaInicio, minInicio] = disp.horario_inicio.split(":").map(Number);
     const [horaFim, minFim] = disp.horario_fim.split(":").map(Number);
 
-    const inicioSlot = toUTCDate(anoDisp, mesDisp, diaDisp, horaInicio, minInicio);
-    const fimSlot = toUTCDate(anoDisp, mesDisp, diaDisp, horaFim, minFim);
+    const inicioSlot = toLocalDate(anoDisp, mesDisp, diaDisp, horaInicio, minInicio);
+    const fimSlot = toLocalDate(anoDisp, mesDisp, diaDisp, horaFim, minFim);
 
     const sessaoExistente = await sessaoRepository.findConflicting(userId, inicioSlot, fimSlot);
 

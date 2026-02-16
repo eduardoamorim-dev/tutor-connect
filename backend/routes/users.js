@@ -224,4 +224,135 @@ router.get(
   }),
 );
 
+/**
+ * @swagger
+ * /users/perfil-academico:
+ *   patch:
+ *     summary: Atualizar perfil acadêmico
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nivel_academico: { type: string, enum: [graduacao, mestrado, doutorado, pos-doutorado] }
+ *               instituicaoId: { type: string }
+ *               programaId: { type: string }
+ *               lattes_url: { type: string }
+ *               orcid: { type: string }
+ *               linha_pesquisa: { type: string }
+ *               area_concentracao: { type: string }
+ *     responses:
+ *       200: { description: Perfil acadêmico atualizado }
+ */
+router.patch(
+  "/perfil-academico",
+  authMiddleware,
+  validate(require("../config/schemas").updateAcademicProfileSchema),
+  asyncHandler(async (req, res) => {
+    const {
+      nivel_academico,
+      instituicaoId,
+      programaId,
+      lattes_url,
+      orcid,
+      linha_pesquisa,
+      area_concentracao,
+    } = req.body;
+
+    const user = await userService.updateAcademicProfile(req.userId, {
+      nivel_academico,
+      instituicao: instituicaoId,
+      programa: programaId,
+      lattes_url,
+      orcid,
+      linha_pesquisa,
+      area_concentracao,
+    });
+    res.json({ user });
+  }),
+);
+
+/**
+ * @swagger
+ * /users/search-by-email:
+ *   get:
+ *     summary: Buscar usuário por email (admin only)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: email
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Usuário encontrado }
+ *       404: { description: Usuário não encontrado }
+ */
+router.get(
+  "/search-by-email",
+  authMiddleware,
+  require("../middleware/authorize").authorize("UPDATE_USER_ROLE"),
+  asyncHandler(async (req, res) => {
+    const { email } = req.query;
+    if (!email) {
+      return res.status(400).json({ error: "Email é obrigatório" });
+    }
+    const user = await require("../models/User").findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.status(404).json({ error: "Usuário não encontrado" });
+    }
+    res.json({
+      user: {
+        _id: user._id,
+        nome: user.nome,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  }),
+);
+
+/**
+ * @swagger
+ * /users/{id}/role:
+ *   patch:
+ *     summary: Atualizar role do usuário (admin only)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [role]
+ *             properties:
+ *               role: { type: string, enum: [student, tutor, coordinator, admin] }
+ *     responses:
+ *       200: { description: Role atualizado }
+ *       403: { description: Acesso negado }
+ */
+router.patch(
+  "/:id/role",
+  authMiddleware,
+  require("../middleware/authorize").authorize("UPDATE_USER_ROLE"),
+  validate(require("../config/schemas").updateRoleSchema),
+  asyncHandler(async (req, res) => {
+    const { role } = req.body;
+    const user = await userService.updateUserRole(req.params.id, role);
+    res.json({ user });
+  }),
+);
+
 module.exports = router;

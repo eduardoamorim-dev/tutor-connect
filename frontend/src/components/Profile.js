@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { useAuth } from "../contexts/AuthContext";
 import usersApi from "../api/services/usersApi";
+import { useInstitutions, usePrograms } from "../hooks/useInstitutionsPrograms";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -21,6 +22,8 @@ import {
   Loader2,
   Star,
   Calendar as CalendarIcon,
+  Building2,
+  FileText,
 } from "lucide-react";
 
 const DISCIPLINAS_SUGERIDAS = [
@@ -66,6 +69,21 @@ function Profile() {
     disciplinas_dominadas: [],
     disciplinas_precisa: [],
     disponibilidade: [],
+    // Academic profile fields
+    nivel_academico: "graduacao",
+    instituicao: "",
+    programa: "",
+    lattes_url: "",
+    orcid: "",
+    linha_pesquisa: "",
+    area_concentracao: "",
+  });
+
+  // Fetch institutions and programs
+  const { data: institutions } = useInstitutions({ ativo: true });
+  const { data: programs } = usePrograms({
+    ...(formData.instituicao && { instituicaoId: formData.instituicao }),
+    ativo: true,
   });
 
   const [novaDisciplinaDomina, setNovaDisciplinaDomina] = useState("");
@@ -76,6 +94,7 @@ function Profile() {
 
   const [novaDisponibilidade, setNovaDisponibilidade] = useState({
     data: "",
+    dataBR: "", // Formato DD/MM/YYYY para exibição
     horario_inicio: "08:00",
     horario_fim: "12:00",
   });
@@ -101,6 +120,13 @@ function Profile() {
         disciplinas_dominadas: data.disciplinas_dominadas || [],
         disciplinas_precisa: data.disciplinas_precisa || [],
         disponibilidade: data.disponibilidade || [],
+        nivel_academico: data.nivel_academico || "graduacao",
+        instituicao: data.instituicao?._id || "",
+        programa: data.programa?._id || "",
+        lattes_url: data.lattes_url || "",
+        orcid: data.orcid || "",
+        linha_pesquisa: data.linha_pesquisa || "",
+        area_concentracao: data.area_concentracao || "",
       });
       setStats({
         totalSessoes: data.total_sessoes || 0,
@@ -135,6 +161,40 @@ function Profile() {
       month: "2-digit",
       year: "numeric",
     });
+  };
+
+  // Máscara para input de data DD/MM/YYYY
+  const handleDataChange = (e) => {
+    let value = e.target.value.replace(/\D/g, ""); // Remove tudo que não é dígito
+
+    if (value.length >= 2) {
+      value = value.slice(0, 2) + "/" + value.slice(2);
+    }
+    if (value.length >= 5) {
+      value = value.slice(0, 5) + "/" + value.slice(5, 9);
+    }
+
+    setNovaDisponibilidade({
+      ...novaDisponibilidade,
+      dataBR: value,
+      data: "", // Limpa enquanto digita
+    });
+
+    // Quando completar DD/MM/YYYY, converte para YYYY-MM-DD
+    if (value.length === 10) {
+      const [dia, mes, ano] = value.split("/");
+      const dataISO = `${ano}-${mes}-${dia}`;
+
+      // Valida se é uma data válida
+      const dateTest = new Date(dataISO);
+      if (!isNaN(dateTest.getTime())) {
+        setNovaDisponibilidade({
+          ...novaDisponibilidade,
+          dataBR: value,
+          data: dataISO,
+        });
+      }
+    }
   };
 
   const adicionarDisciplinaDomina = () => {
@@ -208,13 +268,18 @@ function Profile() {
 
     try {
       setSavingDisponibilidade(true);
-      const response = await usersApi.addDisponibilidade(novaDisponibilidade);
+      const response = await usersApi.addDisponibilidade({
+        data: novaDisponibilidade.data,
+        horario_inicio: novaDisponibilidade.horario_inicio,
+        horario_fim: novaDisponibilidade.horario_fim,
+      });
       setFormData({
         ...formData,
         disponibilidade: response.data.disponibilidade,
       });
       setNovaDisponibilidade({
         data: "",
+        dataBR: "",
         horario_inicio: "08:00",
         horario_fim: "12:00",
       });
@@ -248,6 +313,7 @@ function Profile() {
     }
     try {
       setLoading(true);
+      // Update basic profile
       await usersApi.updateProfile({
         bio: formData.bio,
         localizacao: formData.localizacao,
@@ -255,10 +321,39 @@ function Profile() {
         disciplinas_dominadas: formData.disciplinas_dominadas,
         disciplinas_precisa: formData.disciplinas_precisa,
       });
+
+      // Prepare academic profile data
+      const academicData = {
+        nivel_academico: formData.nivel_academico,
+      };
+
+      // Only add fields if they have values
+      if (formData.instituicao) {
+        academicData.instituicaoId = formData.instituicao;
+      }
+      if (formData.programa) {
+        academicData.programaId = formData.programa;
+      }
+      if (formData.lattes_url && formData.lattes_url.trim()) {
+        academicData.lattes_url = formData.lattes_url.trim();
+      }
+      if (formData.orcid && formData.orcid.trim()) {
+        academicData.orcid = formData.orcid.trim();
+      }
+      if (formData.linha_pesquisa && formData.linha_pesquisa.trim()) {
+        academicData.linha_pesquisa = formData.linha_pesquisa.trim();
+      }
+      if (formData.area_concentracao && formData.area_concentracao.trim()) {
+        academicData.area_concentracao = formData.area_concentracao.trim();
+      }
+
+      // Update academic profile
+      await usersApi.updateAcademicProfile(academicData);
+
       toast.success("Perfil atualizado!");
       refreshUser();
     } catch (error) {
-      toast.error("Erro ao salvar perfil");
+      toast.error(error.response?.data?.error || "Erro ao salvar perfil");
     } finally {
       setLoading(false);
     }
@@ -267,18 +362,18 @@ function Profile() {
   const agora = new Date();
 
   const disponibilidadesPorData = formData.disponibilidade.reduce((acc, disp) => {
-    // Usar UTC para extrair a data (consistente com como salvamos)
+    // Usar hora local para consistência com timezone brasileiro
     const date = new Date(disp.data);
-    const year = date.getUTCFullYear();
-    const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-    const day = String(date.getUTCDate()).padStart(2, "0");
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
 
     // Verificar se o horário já passou
     const [horaFim, minFim] = disp.horario_fim.split(":").map(Number);
     const dataHoraFim = new Date(
       year,
-      date.getUTCMonth(),
-      date.getUTCDate(),
+      date.getMonth(),
+      date.getDate(),
       horaFim,
       minFim,
       0,
@@ -296,7 +391,6 @@ function Profile() {
   }, {});
 
   const datasOrdenadas = Object.keys(disponibilidadesPorData).sort();
-  const hoje = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, "0")}-${String(agora.getDate()).padStart(2, "0")}`;
 
   if (loadingProfile) {
     return (
@@ -386,6 +480,130 @@ function Profile() {
               <p className="text-sm text-gray-500">Ative para poder dar aulas</p>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            <Building2 className="w-5 h-5" />
+            Perfil Acadêmico
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-700">
+            Informações acadêmicas opcionais. Para estudantes de pós-graduação que desejam
+            acompanhamento de horas de docência.
+          </div>
+
+          <div>
+            <Label className="mb-2 block">Nível Acadêmico</Label>
+            <Select
+              value={formData.nivel_academico}
+              onValueChange={(value) => setFormData({ ...formData, nivel_academico: value })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="graduacao">Graduação</SelectItem>
+                <SelectItem value="mestrado">Mestrado</SelectItem>
+                <SelectItem value="doutorado">Doutorado</SelectItem>
+                <SelectItem value="pos-doutorado">Pós-doutorado</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {(formData.nivel_academico === "mestrado" ||
+            formData.nivel_academico === "doutorado" ||
+            formData.nivel_academico === "pos-doutorado") && (
+            <>
+              <div>
+                <Label className="mb-2 block">Instituição</Label>
+                <Select
+                  value={formData.instituicao}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, instituicao: value, programa: "" })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione a instituição" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {institutions?.data?.map((inst) => (
+                      <SelectItem key={inst._id} value={inst._id}>
+                        {inst.nome} ({inst.sigla})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {formData.instituicao && (
+                <div>
+                  <Label className="mb-2 block">Programa</Label>
+                  <Select
+                    value={formData.programa}
+                    onValueChange={(value) => setFormData({ ...formData, programa: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o programa" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {programs?.data?.map((prog) => (
+                        <SelectItem key={prog._id} value={prog._id}>
+                          {prog.nome} - {prog.nivel}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="mb-2 block flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    Currículo Lattes (URL)
+                  </Label>
+                  <Input
+                    placeholder="https://lattes.cnpq.br/..."
+                    value={formData.lattes_url}
+                    onChange={(e) => setFormData({ ...formData, lattes_url: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label className="mb-2 block">ORCID</Label>
+                  <Input
+                    placeholder="0000-0000-0000-0000"
+                    value={formData.orcid}
+                    onChange={(e) => setFormData({ ...formData, orcid: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label className="mb-2 block">Área de Concentração</Label>
+                <Input
+                  placeholder="Ex: Ciência da Computação"
+                  value={formData.area_concentracao}
+                  maxLength={200}
+                  onChange={(e) => setFormData({ ...formData, area_concentracao: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <Label className="mb-2 block">Linha de Pesquisa</Label>
+                <Textarea
+                  placeholder="Descreva sua linha de pesquisa..."
+                  value={formData.linha_pesquisa}
+                  onChange={(e) => setFormData({ ...formData, linha_pesquisa: e.target.value })}
+                  rows={3}
+                  maxLength={500}
+                />
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
@@ -506,18 +724,20 @@ function Profile() {
 
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
               <div>
-                <Label className="text-xs text-gray-500 mb-1 block">Data</Label>
+                <Label className="text-xs text-gray-500 mb-1 block">
+                  Data <span className="text-gray-400">(dia/mês/ano)</span>
+                </Label>
                 <Input
-                  type="date"
-                  value={novaDisponibilidade.data}
-                  min={hoje}
-                  onChange={(e) =>
-                    setNovaDisponibilidade({
-                      ...novaDisponibilidade,
-                      data: e.target.value,
-                    })
-                  }
+                  type="text"
+                  placeholder="dd/mm/aaaa"
+                  value={novaDisponibilidade.dataBR}
+                  maxLength={10}
+                  onChange={handleDataChange}
+                  className={!novaDisponibilidade.data && novaDisponibilidade.dataBR ? "border-red-300" : ""}
                 />
+                {!novaDisponibilidade.data && novaDisponibilidade.dataBR && (
+                  <p className="text-xs text-red-500 mt-1">Data inválida</p>
+                )}
               </div>
               <div>
                 <Label className="text-xs text-gray-500 mb-1 block">Início</Label>
